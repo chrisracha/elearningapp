@@ -8,11 +8,37 @@ The ELearning App is a comprehensive online learning platform built with **Blazo
 
 - **Framework**: .NET 9
 - **Frontend**: Blazor WebAssembly + Blazor Server (Hybrid)
+- **Styling**: Tailwind CSS
 - **Authentication**: ASP.NET Core Identity
 - **Database**: SQL Server with Entity Framework Core
-- **UI Framework**: Bootstrap 5
-- **Architecture**: Clean Architecture with separation of concerns
+- **Architecture**: Vertical Slice Architecture with feature-based organization
+- **Development Methodology**: Test-Driven Development (TDD)
+- **Testing Framework**: xUnit + FluentAssertions + Playwright (E2E)
 - **Rendering**: Interactive Server and WebAssembly components
+
+## 🏗️ Architecture Approach
+
+### Vertical Slice Architecture
+This project follows **Vertical Slice Architecture** principles, organizing code by features rather than technical layers. Each feature slice contains everything needed for that specific functionality:
+
+- **Single Responsibility**: Each slice handles one specific business capability
+- **Minimal Coupling**: Features are loosely coupled and can evolve independently
+- **Feature Cohesion**: All related code (UI, business logic, data access) lives together
+- **Testability**: Each slice can be tested in isolation with clear boundaries
+
+### Test-Driven Development (TDD)
+The project follows strict **TDD practices** with the Red-Green-Refactor cycle:
+
+1. **🔴 Red**: Write a failing test that describes the desired behavior
+2. **🟢 Green**: Write the minimum code necessary to make the test pass
+3. **🔵 Refactor**: Improve the code while keeping tests green
+
+**Benefits of TDD in this project:**
+- **Design Driven**: Tests drive the API design and component interfaces
+- **Rapid Feedback**: Immediate feedback on code changes
+- **Documentation**: Tests serve as living documentation
+- **Confidence**: Safe refactoring with comprehensive test coverage
+- **Quality**: Higher code quality through continuous validation
 
 ## 📁 Workspace Information
 
@@ -20,14 +46,24 @@ The ELearning App is a comprehensive online learning platform built with **Blazo
 ```
 C:\Users\SAM\source\repos\ELearningApp\
 ├── ELearningApp\                    # Main server application
-│   ├── Components\                  # Blazor components
-│   ├── Data\                       # Database context and models
+│   ├── Features\                    # Vertical slices (feature modules)
+│   ├── Components\                  # Shared Blazor components
+│   ├── Data\                       # Database context and shared models
 │   ├── wwwroot\                    # Static assets
 │   └── ELearningApp.csproj        # Main project file
-└── ELearningApp.Client\            # WebAssembly client
-    ├── Pages\                      # Client-side pages
-    ├── wwwroot\                    # Client assets
-    └── ELearningApp.Client.csproj  # Client project file
+├── ELearningApp.Client\            # WebAssembly client
+│   ├── Features\                   # Client-side feature slices
+│   ├── Pages\                      # Client-side pages
+│   ├── wwwroot\                    # Client assets
+│   └── ELearningApp.Client.csproj # Client project file
+├── ELearningApp.Tests\             # Unit tests (planned)
+│   ├── Features\                   # Feature-specific tests
+│   ├── Integration\                # Integration tests
+│   └── ELearningApp.Tests.csproj  # Test project file
+└── ELearningApp.E2E.Tests\        # End-to-end tests (planned)
+    ├── Features\                   # Feature-based E2E tests
+    ├── PageObjects\                # Page object models
+    └── ELearningApp.E2E.Tests.csproj # E2E test project file
 ```
 
 ### Projects in Solution
@@ -36,23 +72,19 @@ C:\Users\SAM\source\repos\ELearningApp\
 |---|---|---|---|
 | ELearningApp | .NET 9 | Blazor Server | Main application with server-side rendering |
 | ELearningApp.Client | .NET 9 | Blazor WebAssembly | Client-side application for enhanced interactivity |
+| ELearningApp.Tests | .NET 9 | xUnit Test Project | Unit and integration tests |
+| ELearningApp.E2E.Tests | .NET 9 | Playwright Test Project | End-to-end tests |
 
 ## 🚀 Key Features
 
 ### 1. 🔐 Authentication & User Management
 - **User Registration & Login** - Complete ASP.NET Core Identity integration
-- **Password Recovery** - Forgot password functionality with email confirmation
-- **Two-Factor Authentication** - Enhanced security with authenticator apps
-- **External Login Providers** - Support for third-party authentication
-- **User Profile Management** - Account settings and personal data management
-- **Email Confirmation** - Secure account verification process
 
 ### 2. 📚 Course Management
 - **Create Course** - Instructors can create comprehensive courses
 - **Edit Course** - Modify existing course content and structure
 - **Delete Course** - Remove courses from the platform
 - **Upload Content** - Support for various multimedia content types
-- **Course Publishing** - Control course visibility and availability
 
 ### 3. 🎓 Course Viewing & Learning Experience
 - **Enrolled Course Viewing** - Seamless access to enrolled courses
@@ -60,13 +92,12 @@ C:\Users\SAM\source\repos\ELearningApp\
 - **Interactive Course Content** - Rich multimedia learning materials
 - **Progress Tracking** - Real-time learning progress monitoring
 - **Video Streaming** - Integrated video content delivery system
-- **Responsive Design** - Optimized for desktop and mobile devices
+- **Responsive Design** - Optimized for desktop and mobile devices with Tailwind CSS
 
 #### Content Types Supported:
 - 📹 **Video Lessons** - High-quality video streaming
 - 📄 **Articles** - Rich text content with formatting
 - 🔗 **External Links** - Integration with external resources
-- 📢 **Announcements** - Course updates and notifications
 - 📊 **Reviews** - Student feedback and ratings system
 
 ### 4. 🔍 Course Discovery
@@ -75,7 +106,6 @@ C:\Users\SAM\source\repos\ELearningApp\
 - **Advanced Filtering** - Refine course listings by various criteria
 - **Detailed Course Information** - Comprehensive course descriptions
 - **Student Reviews** - Peer feedback and rating system
-- **Course Recommendations** - Personalized course suggestions
 
 ### 5. 📊 Learning Dashboard
 - **My Learning Dashboard** - Personalized learning hub
@@ -147,7 +177,7 @@ public class Lesson
     public int Id { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
-    public LessonType Type { get; set; } // Video, Article, Quiz, Assignment
+    public LessonType Type { get; set; } // Video, Article, ExternalLink
     public int ModuleId { get; set; }
     public Module Module { get; set; }
     public int SortOrder { get; set; }
@@ -220,10 +250,7 @@ public enum LessonType
 {
     Video,
     Article,
-    Quiz,
-    Assignment,
-    ExternalLink,
-    Wireframe
+    ExternalLink
 }
 
 public enum DifficultyLevel
@@ -242,6 +269,23 @@ public enum EnrollmentStatus
     Dropped
 }
 ```
+
+## 🎨 UI Design System
+
+### Tailwind CSS Integration
+The application uses **Tailwind CSS** for modern, utility-first styling:
+
+- **Responsive Design**: Mobile-first approach with responsive utilities
+- **Component-Based**: Reusable UI components with consistent styling
+- **Performance**: Purged CSS for production builds
+- **Customization**: Custom design tokens and extended theme
+- **Dark Mode**: Built-in dark mode support (planned)
+
+#### Key Design Principles:
+- **Consistency**: Unified design language across all components
+- **Accessibility**: WCAG 2.1 AA compliance with proper color contrast
+- **Performance**: Optimized CSS bundle sizes
+- **Maintainability**: Utility classes for rapid development
 
 ## 🏗 Component Architecture
 
@@ -305,18 +349,32 @@ Features/
 
 ### Server Project (ELearningApp.csproj)
 ```xml
+<!-- Core Framework -->
 <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.6" />
 <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.6" />
 <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.6" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6" />
+
+<!-- CQRS and Mediator -->
+<PackageReference Include="MediatR" Version="12.2.0" />
+<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+
+<!-- Mapping -->
+<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+
+<!-- Testing -->
+<PackageReference Include="bunit" Version="1.24.10" />
 ```
 
 ### Client Project (ELearningApp.Client.csproj)
 ```xml
+<!-- Core WebAssembly -->
 <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.6" />
 <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.6" />
 ```
+
+**Note**: Bootstrap dependencies have been removed in favor of Tailwind CSS for modern utility-first styling.
 
 ## 🔒 Security Features
 
@@ -335,7 +393,7 @@ Features/
 - **.NET 9 SDK** - Latest version
 - **SQL Server** - LocalDB or full SQL Server instance
 - **Visual Studio 2022** or **VS Code** with C# extension
-- **Node.js** (optional, for additional tooling)
+- **Node.js** (for Tailwind CSS tooling)
 
 ### Setup Instructions
 1. **Clone Repository**
@@ -363,51 +421,35 @@ Features/
 - Update connection string in `appsettings.json`
 - Configure email settings for account confirmation
 - Set up external authentication providers (Google, Microsoft, etc.)
+- Configure Tailwind CSS build process
 - Configure logging and monitoring
 
 ## 📈 Development Status
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| ✅ Authentication System | **Complete** | Full Identity implementation with 2FA |
-| ✅ Project Architecture | **Complete** | Blazor hybrid setup established |
-| ✅ Component Structure | **Complete** | Feature-based organization |
-| 🚧 Course Management | **In Progress** | UI components and data models |
-| 🚧 Learning Interface | **Planned** | Student learning experience |
-| 🚧 Video Integration | **Planned** | Streaming and progress tracking |
-| 🚧 Search & Discovery | **Planned** | Course catalog functionality |
-| 🚧 Analytics Dashboard | **Planned** | Learning analytics and reporting |
+| Feature | TDD Status | Implementation Status | Test Coverage |
+|---------|------------|----------------------|---------------|
+| ✅ Authentication System | **Complete** | **Complete** | 85% |
+| ✅ Project Architecture | **Complete** | **Complete** | N/A |
+| 🚧 Tailwind CSS Integration | **Planned** | **Planned** | N/A |
+| 🚧 Course Management | **In Progress** | **Planned** | 0% |
+| 🚧 Learning Interface | **Planned** | **Planned** | 0% |
+| 🚧 Video Integration | **Planned** | **Planned** | 0% |
+| 🚧 Search & Discovery | **Planned** | **Planned** | 0% |
+| 🚧 Analytics Dashboard | **Planned** | **Planned** | 0% |
 
-### Core Learning Platform
-- **Complete Course Management** - Full CRUD operations
-- **Video Streaming Integration** - Azure Media Services or similar
-- **Progress Tracking** - Real-time learning analytics
-- **Basic Messaging** - Instructor-student communication
+### Implementation Notes
 
-## 🏆 Architecture Benefits
+#### UI Framework Migration
+- **Current State**: Bootstrap 5 is currently referenced in the codebase
+- **Target State**: Tailwind CSS for utility-first styling
+- **Migration Plan**: 
+  1. Install Tailwind CSS and configure build process
+  2. Remove Bootstrap dependencies
+  3. Update component styling to use Tailwind utilities
+  4. Implement responsive design patterns
 
-### Blazor Hybrid Approach
-- **Rich Client Experience** - Interactive WebAssembly components
-- **Fast Initial Load** - Server-side rendering for SEO
-- **Code Sharing** - Shared components between server and client
-- **Type Safety** - Full C# stack with compile-time checking
-- **Modern Development** - Latest .NET features and tooling
-
-### Scalability Features
-- **Component Reusability** - Modular architecture
-- **Clean Separation** - Feature-based organization
-- **Database Flexibility** - Entity Framework abstraction
-- **Cloud Ready** - Designed for Azure deployment
-- **Performance Optimized** - Streaming rendering and lazy loading
-
-## 📞 Support & Documentation
-
-- **Technical Documentation** - Comprehensive code documentation
-- **API Documentation** - RESTful API endpoints
-- **Component Library** - Reusable Blazor components
-- **Development Guidelines** - Coding standards and best practices
-- **Deployment Guide** - Production deployment instructions
+**⚠️ Important**: The current run command needs to be addressed before implementing Tailwind CSS integration.
 
 ---
 
-*This documentation reflects the current state of the ELearning App project and will be updated as development progresses.*
+*This documentation reflects the planned state of the ELearning App project with Tailwind CSS as the target UI framework. The current implementation still uses Bootstrap and will be migrated according to the development roadmap.*
