@@ -1,26 +1,17 @@
-﻿@inherits LayoutComponentBase
+﻿@using ELearningApp.Components.Layout
+@inherits LayoutComponentBase
 
-<div class="min-h-screen bg-gray-50 flex">
-    <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-lg">
-        <NavMenu />
-    </div>
+<div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <Header />
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col">
-        <!-- Top Bar -->
-        <div class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-semibold text-gray-800">E-Learning Platform</h1>
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="text-gray-600 hover:text-primary-600 transition-colors">
-                About
-            </a>
-        </div>
-
-        <!-- Content Area -->
-        <article class="flex-1 p-6 overflow-auto">
-            @Body
-        </article>
+    <main class="flex-1">
+        @Body
     </main>
+
+    <!-- Footer -->
+    <Footer />
 </div>
 
 <!-- Error UI -->
