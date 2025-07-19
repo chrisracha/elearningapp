@@ -1,197 +1,91 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Components.Authorization;
 using ELearningApp.Data;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
-namespace ELearningApp.Services
+namespace ELearningApp.Services;
+
+public class UserService : IUserService
 {
-    public class UserService : IUserService
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(
+        UserManager<ApplicationUser> userManager,
+        IHttpContextAccessor httpContextAccessor,
+        ApplicationDbContext context,
+        ILogger<UserService> logger)
     {
-        private readonly ApplicationDbContext _context;
-        private readonly AuthenticationStateProvider _authStateProvider;
-        private readonly ILogger<UserService> _logger;
+        _userManager = userManager;
+        _httpContextAccessor = httpContextAccessor;
+        _context = context;
+        _logger = logger;
+    }
 
-        public UserService(
-            ApplicationDbContext context,
-            AuthenticationStateProvider authStateProvider,
-            ILogger<UserService> logger)
+    public async Task<ApplicationUser?> GetCurrentUserAsync()
+    {
+        try
         {
-            _context = context;
-            _authStateProvider = authStateProvider;
-            _logger = logger;
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                return await _userManager.GetUserAsync(user);
+            }
+            return null;
         }
-
-        public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
+        catch (Exception ex)
         {
-            try
-            {
-                return await _context.Users.FindAsync(userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting user by ID {UserId}", userId);
-                throw;
-            }
+            _logger.LogError(ex, "Error getting current user");
+            return null;
         }
+    }
 
-        public async Task<ApplicationUser?> GetCurrentUserAsync()
+    public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
+    {
+        try
         {
-            try
-            {
-                var authState = await _authStateProvider.GetAuthenticationStateAsync();
-                var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (string.IsNullOrEmpty(userId))
-                    return null;
-
-                return await GetUserByIdAsync(userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting current user");
-                throw;
-            }
+            return await _userManager.FindByIdAsync(userId);
         }
-
-        public async Task<bool> IsInstructorAsync(string userId)
+        catch (Exception ex)
         {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                return user?.IsInstructor == true && user.IsActive;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking instructor status for user {UserId}", userId);
-                throw;
-            }
+            _logger.LogError(ex, "Error getting user by ID {UserId}", userId);
+            return null;
         }
+    }
 
-        public async Task<bool> MakeUserInstructorAsync(string userId)
+    public async Task<bool> IsUserInstructorAsync(string userId)
+    {
+        try
         {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                    return false;
-
-                user.IsInstructor = true;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("User {UserId} has been granted instructor role", userId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error making user {UserId} an instructor", userId);
-                throw;
-            }
+            var user = await _userManager.FindByIdAsync(userId);
+            return user?.IsInstructor == true;
         }
-
-        public async Task<bool> RemoveInstructorRoleAsync(string userId)
+        catch (Exception ex)
         {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                    return false;
-
-                user.IsInstructor = false;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Instructor role removed from user {UserId}", userId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing instructor role from user {UserId}", userId);
-                throw;
-            }
+            _logger.LogError(ex, "Error checking if user {UserId} is instructor", userId);
+            return false;
         }
+    }
 
-        public async Task<bool> UpdateUserProfileAsync(ApplicationUser user)
+    public async Task<bool> SetUserInstructorStatusAsync(string userId, bool isInstructor)
+    {
+        try
         {
-            try
-            {
-                user.UpdatedAt = DateTime.UtcNow;
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return false;
 
-                _logger.LogInformation("Updated profile for user {UserId}", user.Id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating user profile for {UserId}", user.Id);
-                throw;
-            }
+            user.IsInstructor = isInstructor;
+            var result = await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation("Updated instructor status for user {UserId} to {IsInstructor}", userId, isInstructor);
+            return result.Succeeded;
         }
-
-        public async Task<IEnumerable<ApplicationUser>> GetInstructorsAsync()
+        catch (Exception ex)
         {
-            try
-            {
-                return await _context.Users
-                    .Where(u => u.IsInstructor && u.IsActive)
-                    .OrderBy(u => u.FirstName)
-                    .ThenBy(u => u.LastName)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting instructors list");
-                throw;
-            }
-        }
-
-        public async Task<bool> DeactivateUserAsync(string userId)
-        {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                    return false;
-
-                user.IsActive = false;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Deactivated user {UserId}", userId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deactivating user {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<bool> ActivateUserAsync(string userId)
-        {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                    return false;
-
-                user.IsActive = true;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Activated user {UserId}", userId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error activating user {UserId}", userId);
-                throw;
-            }
+            _logger.LogError(ex, "Error setting instructor status for user {UserId}", userId);
+            return false;
         }
     }
 } 

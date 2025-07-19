@@ -74,12 +74,12 @@ public class StaticDataService
             new CourseDisplayDto
             {
                 Id = 1,
-                Title = "Complete Data Science Bootcamp",
-                Description = "Explore the core concepts of data science, including data analysis, visualization, and introductory machine learning.",
-                InstructorName = "Alice Johnson",
+                Title = "Grounding Skills for PTSD, Stress, Panic and Anxiety",
+                Description = "Learn to Turn off the Fight, Flight, Freeze Response and Turn on Calm Using your Body's Natural Parasympathetic Response",
+                InstructorName = "INSTRUCTOR",
                 ImageUrl = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-                Price = 400,
-                OriginalPrice = 599,
+                YouTubeVideoId = "dQw4w9WgXcQ", // Sample YouTube video ID
+                YouTubePreviewVideoId = "jNQXAC9IVRw", // Sample preview video ID
                 Rating = 4.3,
                 ReviewCount = 125840,
                 Level = "Beginner",
@@ -93,8 +93,8 @@ public class StaticDataService
                 Description = "Master modern web development, including HTML, CSS, and JavaScript, with practical projects and examples.",
                 InstructorName = "Mark Smith",
                 ImageUrl = "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-                Price = 780,
-                OriginalPrice = 999,
+                YouTubeVideoId = "jNQXAC9IVRw", // Sample YouTube video ID
+                YouTubePreviewVideoId = "dQw4w9WgXcQ", // Sample preview video ID
                 Rating = 4.8,
                 ReviewCount = 231565,
                 Level = "Intermediate",
@@ -108,8 +108,8 @@ public class StaticDataService
                 Description = "Learn multiple programming languages including Python programming, including variables, loops, and functions, with hands-on exercises.",
                 InstructorName = "John Doe",
                 ImageUrl = "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-                Price = 556,
-                OriginalPrice = 699,
+                YouTubeVideoId = "dQw4w9WgXcQ", // Sample YouTube video ID
+                YouTubePreviewVideoId = "jNQXAC9IVRw", // Sample preview video ID
                 Rating = 4.7,
                 ReviewCount = 187945,
                 Level = "Beginner",
@@ -140,59 +140,57 @@ public class StaticDataService
             new PricingPlan
             {
                 Id = 1,
-                Name = "Personal Plan",
-                Description = "Individual",
-                Price = 30,
-                PriceDescription = "Starting at ₱30/month",
+                Name = "Individual Plan",
+                Description = "For individuals looking to learn",
+                Price = 0,
+                PriceDescription = "Free",
                 IsPopular = false,
-                ButtonText = "Start subscription",
-                ButtonAction = "/subscribe/personal",
+                ButtonText = "Get started",
+                ButtonAction = "/register",
                 Features = new List<string>
                 {
-                    "Access to 20,000+ top courses",
-                    "Certification prep",
-                    "Goal-focused recommendations",
-                    "AI-powered coding exercises"
+                    "Access to all courses",
+                    "Certificate of completion",
+                    "Progress tracking",
+                    "Community access"
                 }
             },
             new PricingPlan
             {
                 Id = 2,
-                Name = "Team Plan",
-                Description = "2 to 20 people",
-                Price = 1770,
-                PriceDescription = "₱1,770 a month per user",
+                Name = "Student Plan",
+                Description = "Perfect for students",
+                Price = 0,
+                PriceDescription = "Free",
                 IsPopular = true,
-                ButtonText = "Start subscription",
-                ButtonAction = "/subscribe/team",
+                ButtonText = "Get started",
+                ButtonAction = "/register",
                 Features = new List<string>
                 {
-                    "Access to 11,000+ top courses",
-                    "Certification prep",
-                    "Goal-focused recommendations",
-                    "Advanced coding exercises",
-                    "Analytics and adoption reports"
+                    "Access to all courses",
+                    "Certificate of completion",
+                    "Progress tracking",
+                    "Advanced learning tools",
+                    "Priority support"
                 }
             },
             new PricingPlan
             {
                 Id = 3,
-                Name = "Enterprise Plan",
-                Description = "More than 20 people",
+                Name = "Educator Plan",
+                Description = "For educators and instructors",
                 Price = 0,
-                PriceDescription = "Contact sales for pricing",
+                PriceDescription = "Free",
                 IsPopular = false,
-                ButtonText = "Request a demo",
-                ButtonAction = "/contact/demo",
+                ButtonText = "Get started",
+                ButtonAction = "/register",
                 Features = new List<string>
                 {
-                    "Access to 25,000+ top courses",
-                    "Certification prep",
-                    "Goal-focused recommendations",
-                    "Advanced coding exercises",
-                    "Advanced LMS integrations",
-                    "Advanced team analytics",
-                    "Dedicated customer success team"
+                    "Access to all courses",
+                    "Create and publish courses",
+                    "Student analytics",
+                    "Instructor tools",
+                    "Community management"
                 }
             }
         };

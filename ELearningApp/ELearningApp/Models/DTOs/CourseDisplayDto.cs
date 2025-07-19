@@ -7,8 +7,8 @@ namespace ELearningApp.Models.DTOs
         public string Description { get; set; } = string.Empty;
         public string InstructorName { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public decimal OriginalPrice { get; set; }
+        public string? YouTubeVideoId { get; set; }
+        public string? YouTubePreviewVideoId { get; set; }
         public double Rating { get; set; }
         public int ReviewCount { get; set; }
         public int CategoryId { get; set; }

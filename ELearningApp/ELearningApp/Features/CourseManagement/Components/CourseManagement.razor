@@ -308,28 +308,54 @@
 
     private async Task DeleteCourse(int courseId)
     {
-        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this course? This action cannot be undone."))
+        try
         {
-            try
+            // Get current user for authorization
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (currentUser == null)
             {
-                var success = await CourseService.DeleteCourseAsync(courseId);
+                await JS.InvokeVoidAsync("alert", "Unable to identify current user.");
+                return;
+            }
+
+            // Check if course can be deleted and get deletion info
+            var canDelete = await CourseService.CanDeleteCourseAsync(courseId, currentUser.Id);
+            var (hasEnrollments, enrollmentCount) = await CourseService.GetCourseDeletionInfoAsync(courseId);
+
+            // Create appropriate confirmation message
+            string confirmMessage;
+            if (hasEnrollments)
+            {
+                confirmMessage = $"This course has {enrollmentCount} enrollment(s). Are you sure you want to delete/archive it?";
+            }
+            else
+            {
+                confirmMessage = "Are you sure you want to delete this course? This action cannot be undone.";
+            }
+
+            if (await JS.InvokeAsync<bool>("confirm", confirmMessage))
+            {
+                var (success, message) = await CourseService.DeleteCourseWithValidationAsync(courseId, currentUser.Id);
+                
                 if (success)
                 {
                     await LoadCourses();
-                    await JS.InvokeVoidAsync("alert", "Course deleted successfully.");
+                    await JS.InvokeVoidAsync("alert", message);
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("alert", "Failed to delete course.");
+                    await JS.InvokeVoidAsync("alert", message);
                 }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error deleting course: {ex.Message}");
-            }
         }
-        
-        activeDropdown = null;
-        StateHasChanged();
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error deleting course: {ex.Message}");
+        }
+        finally
+        {
+            activeDropdown = null;
+            StateHasChanged();
+        }
     }
 } 

@@ -15,42 +15,112 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Register - E-Learning Platform</PageTitle>
 
-<h1>Register</h1>
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="bg-white shadow-xl rounded-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Register</h1>
+            </div>
 
-<div class="row">
-    <div class="col-lg-6">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
-            <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.Password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.ConfirmPassword">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div class="text-red-700 text-sm">@Message</div>
+                </div>
+            }
+
+            <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register" class="space-y-6">
+                <DataAnnotationsValidator />
+                
+                <div>
+                    <label for="Input.FullName" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <InputText @bind-Value="Input.FullName" 
+                               id="Input.FullName" 
+                               class="w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                               autocomplete="name" 
+                               aria-required="true" 
+                               placeholder="Enter your full name" />
+                    <ValidationMessage For="() => Input.FullName" class="mt-1 text-sm text-red-600" />
+                </div>
+
+                <div>
+                    <label for="Input.Email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <InputText @bind-Value="Input.Email" 
+                               id="Input.Email" 
+                               class="w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                               autocomplete="username" 
+                               aria-required="true" 
+                               placeholder="Enter your email" />
+                    <ValidationMessage For="() => Input.Email" class="mt-1 text-sm text-red-600" />
+                </div>
+
+                <div>
+                    <label for="Input.Password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <InputText type="password" 
+                               @bind-Value="Input.Password" 
+                               id="Input.Password" 
+                               class="w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                               autocomplete="new-password" 
+                               aria-required="true" 
+                               placeholder="Enter your password" />
+                    <ValidationMessage For="() => Input.Password" class="mt-1 text-sm text-red-600" />
+                </div>
+
+                <div>
+                    <label for="Input.ConfirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                    <InputText type="password" 
+                               @bind-Value="Input.ConfirmPassword" 
+                               id="Input.ConfirmPassword" 
+                               class="w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                               autocomplete="new-password" 
+                               aria-required="true" 
+                               placeholder="Confirm your password" />
+                    <ValidationMessage For="() => Input.ConfirmPassword" class="mt-1 text-sm text-red-600" />
+                </div>
+
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <InputCheckbox @bind-Value="Input.AgreeToTerms" 
+                                      id="Input.AgreeToTerms"
+                                      class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500" />
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="Input.AgreeToTerms" class="font-medium text-gray-700">
+                            I agree to Terms & Conditions
+                        </label>
+                        <ValidationMessage For="() => Input.AgreeToTerms" class="block mt-1 text-red-600" />
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                        Create Account
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">OR</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">
+                        Already have an account? 
+                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" 
+                           class="font-medium text-primary-600 hover:text-primary-500">Log in</a>
+                    </p>
+                </div>
+            </EditForm>
+        </div>
     </div>
 </div>
 
@@ -69,9 +139,19 @@
     {
         var user = CreateUser();
 
+        // Parse full name into first and last name
+        var nameParts = Input.FullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        user.FirstName = nameParts.FirstOrDefault() ?? "";
+        user.LastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
+
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        
+        user.CreatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.IsActive = true;
+
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (!result.Succeeded)
@@ -126,13 +206,18 @@
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Full name is required")]
+        [StringLength(100, ErrorMessage = "Full name cannot exceed 100 characters")]
+        [Display(Name = "Full Name")]
+        public string FullName { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         [Display(Name = "Email")]
         public string Email { get; set; } = "";
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, ErrorMessage = "Password must be at least {2} and at most {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; } = "";
@@ -141,5 +226,10 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "You must agree to the Terms & Conditions")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the Terms & Conditions")]
+        [Display(Name = "I agree to Terms & Conditions")]
+        public bool AgreeToTerms { get; set; } = false;
     }
 }

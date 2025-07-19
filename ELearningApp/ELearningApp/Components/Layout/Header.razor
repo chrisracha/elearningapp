@@ -1,82 +1,203 @@
-<header class="bg-white shadow-sm border-b border-gray-200">
-    <div class="container mx-auto px-6">
-        <div class="flex items-center justify-between h-16">
-            <!-- Logo -->
-            <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                </div>
-                <span class="text-xl font-bold text-gray-900">E-learning</span>
-            </div>
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 
-            <!-- Navigation Links -->
-            <nav class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-gray-700 hover:text-primary-600 transition-colors">Explore</a>
-                
-                <!-- Search Bar -->
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+<header class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            
+            <!-- Logo and Brand -->
+            <div class="flex items-center">
+                <a href="/" class="flex items-center">
+                    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                         </svg>
                     </div>
-                    <input type="text" 
-                           placeholder="Search for anything" 
-                           class="block w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-                </div>
+                    <span class="text-xl font-bold text-gray-900">EduPlatform</span>
+                </a>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="/" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                    Home
+                </a>
+                <a href="/catalog" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                    Explore
+                </a>
                 
-                <a href="/business" class="text-gray-700 hover:text-primary-600 transition-colors">Teach on E-learning</a>
+                <AuthorizeView>
+                    <Authorized>
+                        <!-- Student Navigation -->
+                        <AuthorizeView Policy="StudentOnly">
+                            <Authorized Context="studentContext">
+                                <a href="/dashboard" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                                    My Learning
+                                </a>
+                            </Authorized>
+                        </AuthorizeView>
+                        
+                        <!-- Instructor Navigation -->
+                        <AuthorizeView Policy="InstructorOnly">
+                            <Authorized Context="instructorContext">
+                                <div class="relative group">
+                                    <button class="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center">
+                                        Instructor
+                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    <!-- Dropdown Menu -->
+                                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                        <a href="/instructor/courses" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            My Courses
+                                        </a>
+                                        <a href="/instructor/courses/create" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            Create Course
+                                        </a>
+                                    </div>
+                                </div>
+                            </Authorized>
+                        </AuthorizeView>
+                    </Authorized>
+                </AuthorizeView>
             </nav>
 
-            <!-- Auth Links -->
+            <!-- User Menu -->
             <div class="flex items-center space-x-4">
                 <AuthorizeView>
                     <Authorized>
-                        <a href="/Account/Manage" class="text-gray-700 hover:text-primary-600 transition-colors">
-                            @context.User.Identity?.Name
-                        </a>
-                        <form action="Account/Logout" method="post" class="inline">
-                            <AntiforgeryToken />
-                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                            <button type="submit" class="text-gray-700 hover:text-primary-600 transition-colors">
-                                Logout
+                        <!-- User Profile Dropdown -->
+                        <div class="relative group">
+                            <button class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <span class="ml-2 text-gray-700 font-medium">@context.User.Identity?.Name</span>
+                                <svg class="ml-1 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
                             </button>
-                        </form>
+                            
+                            <!-- User Dropdown -->
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <a href="/Account/Manage" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Profile
+                                </a>
+                                <AuthorizeView Policy="StudentOnly">
+                                    <Authorized Context="dashboardContext">
+                                        <a href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                            Dashboard
+                                        </a>
+                                    </Authorized>
+                                </AuthorizeView>
+                                <div class="border-t border-gray-100"></div>
+                                <form action="/Account/Logout" method="post" class="block">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="ReturnUrl" value="@CurrentUrl" />
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                        </svg>
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </Authorized>
                     <NotAuthorized>
-                        <a href="/Account/Login" class="text-gray-700 hover:text-primary-600 transition-colors">Log in</a>
-                        <a href="/Account/Register" class="inline-block bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 hover:text-white transition-colors">
-                            Sign up
-                        </a>
+                        <!-- Guest Navigation -->
+                        <div class="flex items-center space-x-4">
+                            <a href="/Account/Login" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                                Login
+                            </a>
+                            <a href="/Account/Register" 
+                               class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium">
+                                Sign Up
+                            </a>
+                        </div>
                     </NotAuthorized>
                 </AuthorizeView>
+
+                <!-- Mobile Menu Button -->
+                <button @onclick="ToggleMobileMenu" 
+                        class="md:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
+
+        <!-- Mobile Menu -->
+        @if (isMobileMenuOpen)
+        {
+            <div class="md:hidden border-t border-gray-200 pt-4 pb-4">
+                <div class="space-y-2">
+                    <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                        Home
+                    </a>
+                    <a href="/catalog" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                        Courses
+                    </a>
+                    
+                    <AuthorizeView>
+                        <Authorized>
+                            <AuthorizeView Policy="StudentOnly">
+                                <Authorized Context="mobileStudentContext">
+                                    <a href="/dashboard" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                                        My Learning
+                                    </a>
+                                </Authorized>
+                            </AuthorizeView>
+                            
+                            <AuthorizeView Policy="InstructorOnly">
+                                <Authorized Context="mobileInstructorContext">
+                                    <div class="px-3 py-2">
+                                        <div class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Instructor</div>
+                                        <a href="/instructor/courses" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
+                                            My Courses
+                                        </a>
+                                        <a href="/instructor/courses/create" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
+                                            Create Course
+                                        </a>
+                                    </div>
+                                </Authorized>
+                            </AuthorizeView>
+                        </Authorized>
+                        <NotAuthorized>
+                            <div class="px-3 py-2 space-y-2">
+                                <a href="/Account/Login" class="block w-full text-center px-4 py-2 text-base font-medium text-gray-700 hover:text-primary-600 border border-gray-300 rounded-md">
+                                    Login
+                                </a>
+                                <a href="/Account/Register" class="block w-full text-center px-4 py-2 text-base font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md">
+                                    Sign Up
+                                </a>
+                            </div>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        }
     </div>
 </header>
 
 @code {
-    private string? currentUrl;
+    private bool isMobileMenuOpen = false;
+    private string CurrentUrl => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
 
-    protected override void OnInitialized()
+    private void ToggleMobileMenu()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        isMobileMenuOpen = !isMobileMenuOpen;
     }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-}
-
-@inject NavigationManager NavigationManager
-@implements IDisposable 
+} 

@@ -1,0 +1,255 @@
+@page "/course/{courseId:int}/learn"
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
+@using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject ICourseService CourseService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>@(course?.Title ?? "Loading...") - E-Learning Platform</PageTitle>
+
+<div class="min-h-screen bg-gray-50">
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center min-h-screen">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+    }
+    else if (course != null && isEnrolled)
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
+            
+            <!-- Course Content Area -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    
+                    <!-- Course Header -->
+                    <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-6">
+                        <h1 class="text-2xl font-bold mb-2">@course.Title</h1>
+                        <div class="flex items-center space-x-4 text-primary-100">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
+                                </svg>
+                                @course.Instructor.FirstName @course.Instructor.LastName
+                            </span>
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                @((int)progressPercentage)% Complete
+                            </span>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mt-4">
+                            <div class="bg-primary-500 rounded-full h-2">
+                                <div class="bg-white h-2 rounded-full transition-all duration-300" style="width: @(progressPercentage)%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Tabs -->
+                    <div class="border-b border-gray-200">
+                        <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                            <button @onclick="() => SetActiveTab(ContentTab.Content)"
+                                    class="@GetTabClasses(ContentTab.Content) py-4 px-1 border-b-2 font-medium text-sm">
+                                Course Content
+                            </button>
+                            <button @onclick="() => SetActiveTab(ContentTab.Announcements)"
+                                    class="@GetTabClasses(ContentTab.Announcements) py-4 px-1 border-b-2 font-medium text-sm">
+                                Announcements
+                            </button>
+                            <button @onclick="() => SetActiveTab(ContentTab.Reviews)"
+                                    class="@GetTabClasses(ContentTab.Reviews) py-4 px-1 border-b-2 font-medium text-sm">
+                                Reviews
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="p-6">
+                        @if (activeTab == ContentTab.Content)
+                        {
+                            <ViewCourseModules Course="course" OnLessonSelected="SelectLesson" />
+                        }
+                        else if (activeTab == ContentTab.Announcements)
+                        {
+                            <ViewAnnouncementTab CourseId="course.Id" />
+                        }
+                        else if (activeTab == ContentTab.Reviews)
+                        {
+                            <ViewReviewsTab CourseId="course.Id" />
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    
+                    <!-- Current Lesson Info -->
+                    @if (selectedLesson != null)
+                    {
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Current Lesson</h3>
+                            <p class="text-sm text-gray-600 mb-4">@selectedLesson.Title</p>
+                            
+                            @if (selectedLesson.Type == LessonType.Video)
+                            {
+                                <ViewVideo Lesson="selectedLesson" OnCompleted="OnLessonCompleted" />
+                            }
+                            else if (selectedLesson.Type == LessonType.Article)
+                            {
+                                <ViewArticle Lesson="selectedLesson" OnCompleted="OnLessonCompleted" />
+                            }
+                        </div>
+                    }
+
+                    <!-- Course Navigation -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Navigation</h3>
+                        <div class="space-y-2">
+                            <button @onclick="() => SetActiveTab(ContentTab.Content)"
+                                    class="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm">
+                                📚 Course Content
+                            </button>
+                            <button @onclick="ShowCertificate"
+                                    class="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
+                                    disabled="@(progressPercentage < 100)">
+                                🏆 Certificate
+                            </button>
+                            <a href="/dashboard" class="block w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm">
+                                📊 My Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!isEnrolled)
+    {
+        <div class="max-w-4xl mx-auto p-6">
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+                <p class="text-gray-600 mb-6">You are not enrolled in this course.</p>
+                <a href="/course/@courseId" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    View Course Details
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="max-w-4xl mx-auto p-6">
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <h2 class="text-xl font-semibold text-gray-900 mb-2">Course Not Found</h2>
+                <p class="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
+                <a href="/catalog" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    Browse Courses
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+
+    private Course? course;
+    private Lesson? selectedLesson;
+    private bool isLoading = true;
+    private bool isEnrolled = false;
+    private double progressPercentage = 0;
+    private ContentTab activeTab = ContentTab.Content;
+
+    private enum ContentTab
+    {
+        Content,
+        Announcements,
+        Reviews
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourseData();
+    }
+
+    private async Task LoadCourseData()
+    {
+        try
+        {
+            isLoading = true;
+            course = await CourseService.GetCourseWithDetailsAsync(CourseId);
+            
+            if (course != null)
+            {
+                var currentUser = await UserService.GetCurrentUserAsync();
+                if (currentUser != null)
+                {
+                    isEnrolled = await CourseService.IsStudentEnrolledAsync(CourseId, currentUser.Id);
+                    if (isEnrolled)
+                    {
+                        progressPercentage = await CourseService.GetCourseProgressAsync(CourseId, currentUser.Id);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading course:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SetActiveTab(ContentTab tab)
+    {
+        activeTab = tab;
+        StateHasChanged();
+    }
+
+    private string GetTabClasses(ContentTab tab)
+    {
+        return activeTab == tab 
+            ? "border-primary-500 text-primary-600" 
+            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
+    }
+
+    private void SelectLesson(Lesson lesson)
+    {
+        selectedLesson = lesson;
+        StateHasChanged();
+    }
+
+    private async Task OnLessonCompleted(int lessonId)
+    {
+        // TODO: Implement lesson completion tracking
+        await JS.InvokeVoidAsync("alert", "Lesson completed! (Progress tracking will be implemented in Phase 2)");
+        await LoadCourseData(); // Refresh progress
+    }
+
+    private async Task ShowCertificate()
+    {
+        if (progressPercentage >= 100)
+        {
+            await JS.InvokeVoidAsync("alert", "Certificate generation will be implemented in Phase 2");
+        }
+    }
+} 

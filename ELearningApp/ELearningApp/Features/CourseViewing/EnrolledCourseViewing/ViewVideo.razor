@@ -1,0 +1,63 @@
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.Enums
+
+<div class="space-y-4">
+    @if (Lesson != null)
+    {
+        <div class="bg-gray-900 rounded-lg aspect-video flex items-center justify-center">
+            @if (!string.IsNullOrEmpty(Lesson.VideoUrl))
+            {
+                <!-- Placeholder for actual video player -->
+                <div class="text-center text-white">
+                    <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                    </svg>
+                    <p class="text-lg font-medium">Video Player</p>
+                    <p class="text-sm text-gray-300">Video integration will be implemented in Phase 2</p>
+                    <p class="text-xs text-gray-400 mt-2">Video URL: @Lesson.VideoUrl</p>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-white">
+                    <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-lg font-medium">No Video Available</p>
+                    <p class="text-sm text-gray-300">This lesson doesn't have a video yet</p>
+                </div>
+            }
+        </div>
+
+        <!-- Video Controls -->
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                @if (Lesson.DurationMinutes > 0)
+                {
+                    <span>Duration: @Lesson.DurationMinutes minutes</span>
+                }
+            </div>
+            
+            <button @onclick="MarkCompleted"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Mark Complete
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Lesson? Lesson { get; set; }
+    [Parameter] public EventCallback<int> OnCompleted { get; set; }
+
+    private async Task MarkCompleted()
+    {
+        if (Lesson != null)
+        {
+            await OnCompleted.InvokeAsync(Lesson.Id);
+        }
+    }
+} 

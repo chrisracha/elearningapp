@@ -3,38 +3,41 @@ using System.ComponentModel.DataAnnotations.Schema;
 using ELearningApp.Data;
 using ELearningApp.Models.Enums;
 
-namespace ELearningApp.Models.Entities
+namespace ELearningApp.Models.Entities;
+
+public class Enrollment
 {
-    public class Enrollment
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [Required]
-        public string StudentId { get; set; } = string.Empty;
+    [Required]
+    public string UserId { get; set; } = null!;
 
-        [ForeignKey("StudentId")]
-        public ApplicationUser Student { get; set; } = null!;
+    [ForeignKey(nameof(UserId))]
+    public ApplicationUser User { get; set; } = null!;
 
-        public int CourseId { get; set; }
+    [Required]
+    public int CourseId { get; set; }
 
-        [ForeignKey("CourseId")]
-        public Course Course { get; set; } = null!;
+    [ForeignKey(nameof(CourseId))]
+    public Course Course { get; set; } = null!;
 
-        public EnrollmentStatus Status { get; set; } = EnrollmentStatus.Active;
+    [Required]
+    public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
 
-        public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
+    public DateTime? CompletionDate { get; set; }
 
-        public DateTime? CompletedAt { get; set; }
+    public DateTime? LastAccessedDate { get; set; }
 
-        public DateTime LastAccessedAt { get; set; } = DateTime.UtcNow;
+    [Range(0, 100)]
+    public double ProgressPercentage { get; set; } = 0;
 
-        public double ProgressPercentage { get; set; } = 0.0;
+    public int TimeSpentMinutes { get; set; } = 0;
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal PaidAmount { get; set; }
+    public bool IsCertificateIssued { get; set; } = false;
 
-        // Navigation properties
-        public ICollection<LessonProgress> LessonProgress { get; set; } = new List<LessonProgress>();
-    }
+    public EnrollmentStatus Status { get; set; } = EnrollmentStatus.Active;
+
+    // Navigation Properties
+    public virtual ICollection<LessonProgress> LessonProgresses { get; set; } = new List<LessonProgress>();
 } 

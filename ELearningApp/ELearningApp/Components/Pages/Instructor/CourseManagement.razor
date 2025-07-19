@@ -158,7 +158,7 @@
                                     {
                                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10">
                                             <div class="py-1">
-                                                <button @onclick="() => ShowDeleteConfirmation(course.Id, course.Title)"
+                                                <button @onclick="async () => await ShowDeleteConfirmation(course.Id, course.Title)"
                                                         class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900">
                                                     <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -358,13 +358,29 @@
         StateHasChanged();
     }
 
-    private void ShowDeleteConfirmation(int courseId, string courseTitle)
+    private async Task ShowDeleteConfirmation(int courseId, string courseTitle)
     {
-        courseToDeleteId = courseId;
-        courseToDelete = courseTitle;
-        showDeleteModal = true;
-        activeDropdown = null;
-        StateHasChanged();
+        try
+        {
+            courseToDeleteId = courseId;
+            courseToDelete = courseTitle;
+            
+            // Get deletion info to show appropriate message
+            var (hasEnrollments, enrollmentCount) = await CourseService.GetCourseDeletionInfoAsync(courseId);
+            
+            if (hasEnrollments)
+            {
+                courseToDelete = $"{courseTitle} ({enrollmentCount} enrollment(s))";
+            }
+            
+            showDeleteModal = true;
+            activeDropdown = null;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error loading course information: {ex.Message}");
+        }
     }
 
     private async Task ConfirmDelete()
@@ -374,17 +390,25 @@
 
         try
         {
-            var success = await CourseService.DeleteCourseAsync(courseToDeleteId);
+            // Get current user for authorization
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (currentUser == null)
+            {
+                await JS.InvokeVoidAsync("alert", "Unable to identify current user.");
+                return;
+            }
+
+            var (success, message) = await CourseService.DeleteCourseWithValidationAsync(courseToDeleteId, currentUser.Id);
+            
             if (success)
             {
                 await LoadCourses();
                 await FilterCourses();
-                // You could add a toast notification here instead of alert
-                await JS.InvokeVoidAsync("alert", "Course deleted successfully.");
+                await JS.InvokeVoidAsync("alert", message);
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to delete course.");
+                await JS.InvokeVoidAsync("alert", message);
             }
         }
         catch (Exception ex)

@@ -43,24 +43,27 @@ namespace ELearningApp.Services
         Task<bool> UpdateCourseStatsAsync(int courseId);
         Task<bool> IncrementViewCountAsync(int courseId);
 
-        // Enrollment Operations
-        Task<bool> EnrollStudentAsync(int courseId, string studentId, decimal paidAmount);
+        // Enhanced Delete Operations
+        Task<(bool Success, string Message)> DeleteCourseWithValidationAsync(int courseId, string instructorId);
+        Task<bool> CanDeleteCourseAsync(int courseId, string instructorId);
+        Task<(bool HasEnrollments, int EnrollmentCount)> GetCourseDeletionInfoAsync(int courseId);
+
+        // Enrollment Management
+        Task<bool> EnrollStudentAsync(int courseId, string studentId);
         Task<bool> UnenrollStudentAsync(int courseId, string studentId);
         Task<bool> IsStudentEnrolledAsync(int courseId, string studentId);
+        Task<IEnumerable<Enrollment>> GetUserEnrollmentsAsync(string userId);
         Task<Enrollment?> GetEnrollmentAsync(int courseId, string studentId);
-        Task<IEnumerable<Enrollment>> GetStudentEnrollmentsAsync(string studentId);
-        Task<IEnumerable<Enrollment>> GetCourseEnrollmentsAsync(int courseId);
 
         // Progress Tracking
-        Task<bool> UpdateLessonProgressAsync(int enrollmentId, int lessonId, bool isCompleted, int timeSpentMinutes);
         Task<double> GetCourseProgressAsync(int courseId, string studentId);
-        Task<IEnumerable<LessonProgress>> GetLessonProgressAsync(int enrollmentId);
+        Task<bool> UpdateLessonProgressAsync(int lessonId, string studentId, bool isCompleted);
+        Task<bool> MarkLessonCompletedAsync(int lessonId, string studentId);
+        Task<IEnumerable<LessonProgress>> GetStudentProgressAsync(string studentId);
 
-        // Reviews and Ratings
-        Task<CourseReview> AddReviewAsync(int courseId, string studentId, int rating, string? reviewText);
-        Task<CourseReview> UpdateReviewAsync(int reviewId, int rating, string? reviewText);
-        Task<bool> DeleteReviewAsync(int reviewId);
-        Task<IEnumerable<CourseReview>> GetCourseReviewsAsync(int courseId);
+        // Course Statistics
+        Task<bool> IncrementCourseViewAsync(int courseId);
+        Task<int> GetCourseEnrollmentCountAsync(int courseId);
         Task<double> GetCourseAverageRatingAsync(int courseId);
     }
 } 

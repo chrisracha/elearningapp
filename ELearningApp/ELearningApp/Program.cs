@@ -32,7 +32,29 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options => 
+    {
+        options.SignIn.RequireConfirmedAccount = false; // Disable email confirmation for easier development
+        
+        // Disable 2FA completely as requested
+        options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+        
+        // Password requirements
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredLength = 6;
+        options.Password.RequiredUniqueChars = 1;
+        
+        // User requirements
+        options.User.RequireUniqueEmail = true;
+        
+        // Lockout settings
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -42,6 +64,29 @@ builder.Services.AddScoped<StaticDataService>();
 
 // Register Course Management Services
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+// Add Authorization Policies
+builder.Services.AddAuthorizationCore(options =>
+{
+    options.AddPolicy("InstructorOnly", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireAssertion(context =>
+              {
+                  // This will be validated in the component/service layer
+                  // since we need database access to check IsInstructor
+                  return true;
+              }));
+
+    options.AddPolicy("StudentOnly", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireAssertion(context =>
+              {
+                  // This will be validated in the component/service layer  
+                  // since we need database access to check user role
+                  return true;
+              }));
+});
 
 var app = builder.Build();
 

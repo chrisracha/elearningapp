@@ -19,63 +19,44 @@ namespace ELearningApp.Models.Entities
         public string ShortDescription { get; set; } = string.Empty;
 
         [StringLength(2000)]
-        public string? LongDescription { get; set; }
+        public string LongDescription { get; set; } = string.Empty;
 
         [StringLength(500)]
         public string? ImageUrl { get; set; }
-
-        [StringLength(500)]
-        public string? VideoPreviewUrl { get; set; }
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; }
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? DiscountPrice { get; set; }
-
-        public CourseLevel Level { get; set; } = CourseLevel.Beginner;
-
-        public CourseStatus Status { get; set; } = CourseStatus.Draft;
-
-        [Required]
-        public string InstructorId { get; set; } = string.Empty;
-
-        [ForeignKey("InstructorId")]
-        public ApplicationUser Instructor { get; set; } = null!;
-
-        public int CategoryId { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public Category Category { get; set; } = null!;
-
-        [StringLength(1000)]
-        public string? Prerequisites { get; set; }
-
-        [StringLength(1000)]
+        
+        // YouTube Video Integration
+        public string? YouTubeVideoId { get; set; }  // For preview videos
+        public string? YouTubePreviewVideoId { get; set; }  // For course previews
+        
         public string? WhatYouWillLearn { get; set; }
-
+        public string? Prerequisites { get; set; }
+        public CourseLevel Level { get; set; } = CourseLevel.Beginner;
+        public CourseStatus Status { get; set; } = CourseStatus.Draft;
+        public bool IsPublished { get; set; } = false;
         public int EstimatedDurationMinutes { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        public DateTime? PublishedAt { get; set; }
-
-        public bool IsFeatured { get; set; } = false;
-
-        public int ViewCount { get; set; } = 0;
-
+        
+        // Category
+        public int? CategoryId { get; set; }
+        public virtual Category? Category { get; set; }
+        
+        // Instructor
+        public string InstructorId { get; set; } = string.Empty;
+        public virtual ApplicationUser Instructor { get; set; } = null!;
+        
+        // Statistics
         public int EnrollmentCount { get; set; } = 0;
-
+        public int ViewCount { get; set; } = 0;
         public double AverageRating { get; set; } = 0.0;
-
         public int ReviewCount { get; set; } = 0;
-
+        
+        // Timestamps
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        
         // Navigation properties
-        public ICollection<Module> Modules { get; set; } = new List<Module>();
-        public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-        public ICollection<CourseReview> Reviews { get; set; } = new List<CourseReview>();
-        public ICollection<CourseTag> CourseTags { get; set; } = new List<CourseTag>();
+        public virtual ICollection<Module> Modules { get; set; } = new List<Module>();
+        public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public virtual ICollection<CourseReview> Reviews { get; set; } = new List<CourseReview>();
+        public virtual ICollection<CourseTag> CourseTags { get; set; } = new List<CourseTag>();
     }
 } 
