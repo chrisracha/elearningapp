@@ -318,12 +318,12 @@
                 Prerequisites = courseDto.Prerequisites,
                 WhatYouWillLearn = courseDto.WhatYouWillLearn,
                 EstimatedDurationMinutes = courseDto.EstimatedDurationMinutes,
-                InstructorId = currentUser.Id,
+                InstructorId = currentUser!.Id,
                 Status = CourseStatus.Draft
             };
 
             // Save course
-            var createdCourse = await CourseService.CreateCourseAsync(course);
+            await CourseService.CreateCourseAsync(course);
 
             await JS.InvokeVoidAsync("alert", "Course created successfully!");
             Navigation.NavigateTo("/instructor/courses");

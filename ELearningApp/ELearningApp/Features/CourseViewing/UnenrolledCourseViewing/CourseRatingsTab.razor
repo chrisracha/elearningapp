@@ -271,20 +271,21 @@
         };
     }
 
-    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    private Task OnSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            await SearchReviews();
+            return FilterReviews();
         }
+        return Task.CompletedTask;
     }
 
-    private async Task SearchReviews()
+    private Task SearchReviews()
     {
-        await FilterReviews();
+        return FilterReviews();
     }
 
-    private async Task FilterReviews()
+    private Task FilterReviews()
     {
         filteredReviews = reviews;
 
@@ -303,5 +304,6 @@
         }
 
         StateHasChanged();
+        return Task.CompletedTask;
     }
 } 

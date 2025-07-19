@@ -40,6 +40,7 @@ namespace ELearningApp.Services
             try
             {
                 return await _context.Courses
+                    .AsSplitQuery() // Prevent cartesian explosion
                     .Include(c => c.Category)
                     .Include(c => c.Instructor)
                     .Include(c => c.Modules.OrderBy(m => m.OrderIndex))
@@ -619,19 +620,18 @@ namespace ELearningApp.Services
             try
             {
                 var course = await _context.Courses.FindAsync(courseId);
-                if (course == null)
-                    return false;
-
-                course.ViewCount++;
-                course.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-                return true;
+                if (course != null)
+                {
+                    course.ViewCount++;
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error incrementing view count for course {CourseId}", courseId);
-                throw;
+                return false;
             }
         }
 
@@ -760,7 +760,7 @@ namespace ELearningApp.Services
             }
         }
 
-        public async Task<bool> UpdateLessonProgressAsync(int lessonId, string studentId, bool isCompleted)
+        public Task<bool> UpdateLessonProgressAsync(int lessonId, string studentId, bool isCompleted)
         {
             try
             {
@@ -768,33 +768,33 @@ namespace ELearningApp.Services
                 // This will be implemented in Phase 2
                 _logger.LogInformation("Lesson progress update requested for lesson {LessonId}, student {StudentId}, completed: {IsCompleted}", 
                     lessonId, studentId, isCompleted);
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating lesson progress for lesson {LessonId}, student {StudentId}", lessonId, studentId);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-        public async Task<bool> MarkLessonCompletedAsync(int lessonId, string studentId)
+        public Task<bool> MarkLessonCompletedAsync(int lessonId, string studentId)
         {
-            return await UpdateLessonProgressAsync(lessonId, studentId, true);
+            return UpdateLessonProgressAsync(lessonId, studentId, true);
         }
 
-        public async Task<IEnumerable<LessonProgress>> GetStudentProgressAsync(string studentId)
+        public Task<IEnumerable<LessonProgress>> GetStudentProgressAsync(string studentId)
         {
             try
             {
                 // TODO: Implement lesson progress retrieval
                 // This will be implemented in Phase 2
                 _logger.LogInformation("Student progress requested for student {StudentId}", studentId);
-                return Enumerable.Empty<LessonProgress>();
+                return Task.FromResult(Enumerable.Empty<LessonProgress>());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting student progress for student {StudentId}", studentId);
-                return Enumerable.Empty<LessonProgress>();
+                return Task.FromResult(Enumerable.Empty<LessonProgress>());
             }
         }
 

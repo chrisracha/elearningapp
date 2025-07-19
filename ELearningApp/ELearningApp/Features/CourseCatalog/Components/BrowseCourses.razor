@@ -345,24 +345,24 @@
         Navigation.NavigateTo($"/course/{course.Id}");
     }
 
-    private void OnCategoryChanged(ChangeEventArgs e)
+    private async Task OnCategoryChanged(ChangeEventArgs e)
     {
-        selectedCategoryId = e.Value?.ToString();
+        selectedCategoryId = e.Value?.ToString() ?? string.Empty;
         currentPage = 1; // Reset to first page when category changes
-        FilterCourses();
+        await FilterCourses();
     }
 
-    private void OnLevelChanged(ChangeEventArgs e)
+    private async Task OnLevelChanged(ChangeEventArgs e)
     {
-        selectedLevel = e.Value?.ToString();
+        selectedLevel = e.Value?.ToString() ?? string.Empty;
         currentPage = 1; // Reset to first page when level changes
-        FilterCourses();
+        await FilterCourses();
     }
 
-    private void OnRatingChanged(ChangeEventArgs e)
+    private async Task OnRatingChanged(ChangeEventArgs e)
     {
-        minRating = e.Value?.ToString();
+        minRating = e.Value?.ToString() ?? string.Empty;
         currentPage = 1; // Reset to first page when rating changes
-        FilterCourses();
+        await FilterCourses();
     }
 } 

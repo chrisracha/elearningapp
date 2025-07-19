@@ -132,38 +132,21 @@
     <!-- Instructor Info -->
     <div class="space-y-3 pt-6 border-t border-gray-200">
         <h3 class="font-semibold text-gray-900">Instructor</h3>
-        <div class="flex items-start space-x-4">
-            <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                @if (!string.IsNullOrEmpty(Course.Instructor.ProfileImageUrl))
-                {
-                    <img src="@Course.Instructor.ProfileImageUrl" alt="@Course.Instructor.FirstName @Course.Instructor.LastName" class="w-full h-full object-cover rounded-lg">
-                }
-                else
-                {
-                    <span class="text-xs text-gray-600">Logo</span>
-                }
+        <div class="flex items-center space-x-4">
+            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
             </div>
             <div>
-                <h4 class="font-semibold text-gray-900">@Course.Instructor.FirstName @Course.Instructor.LastName</h4>
-                <p class="text-sm text-gray-600 mb-2">@(Course.Instructor.CompanyName ?? "Professional Instructor")</p>
-                <div class="text-sm text-gray-700 leading-relaxed">
-                    @if (!string.IsNullOrEmpty(Course.Instructor.Bio))
-                    {
-                        <p>@Course.Instructor.Bio</p>
-                    }
-                    else
-                    {
-                        <p>
-                            @Course.Instructor.FirstName @Course.Instructor.LastName is an experienced instructor with expertise in 
-                            @Course.Category?.Name. With years of practical experience, they bring real-world knowledge to help 
-                            students succeed in their learning journey.
-                        </p>
-                    }
+                <h4 class="text-lg font-semibold text-gray-900">@Course.Instructor.FirstName @Course.Instructor.LastName</h4>
+                <p class="text-sm text-gray-600 mb-2">Professional Instructor</p>
+                <div class="flex items-center text-sm text-gray-500">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    Verified Instructor
                 </div>
-                <button @onclick="() => ViewInstructor(Course.InstructorId)" 
-                        class="text-sm text-primary-600 hover:text-primary-700 mt-2 underline">
-                    Show Less
-                </button>
             </div>
         </div>
     </div>

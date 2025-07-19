@@ -40,6 +40,7 @@ namespace ELearningApp.Models.Entities
         public virtual Category? Category { get; set; }
         
         // Instructor
+        [ForeignKey("Instructor")]
         public string InstructorId { get; set; } = string.Empty;
         public virtual ApplicationUser Instructor { get; set; } = null!;
         
