@@ -23,8 +23,6 @@ namespace ELearningApp.Services
         Task<IEnumerable<Course>> FilterCoursesAsync(
             int? categoryId = null,
             CourseLevel? level = null,
-            decimal? minPrice = null,
-            decimal? maxPrice = null,
             double? minRating = null,
             int pageNumber = 1,
             int pageSize = 12

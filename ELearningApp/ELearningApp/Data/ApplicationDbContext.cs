@@ -50,9 +50,9 @@ namespace ELearningApp.Data
 
             // Configure Enrollment relationships
             builder.Entity<Enrollment>()
-                .HasOne(e => e.Student)
+                .HasOne(e => e.User)
                 .WithMany()
-                .HasForeignKey(e => e.StudentId)
+                .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Enrollment>()
@@ -64,7 +64,7 @@ namespace ELearningApp.Data
             // Configure LessonProgress relationships
             builder.Entity<LessonProgress>()
                 .HasOne(lp => lp.Enrollment)
-                .WithMany(e => e.LessonProgress)
+                .WithMany(e => e.LessonProgresses)
                 .HasForeignKey(lp => lp.EnrollmentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -102,7 +102,7 @@ namespace ELearningApp.Data
 
             // Configure unique constraints
             builder.Entity<Enrollment>()
-                .HasIndex(e => new { e.StudentId, e.CourseId })
+                .HasIndex(e => new { e.UserId, e.CourseId })
                 .IsUnique();
 
             builder.Entity<LessonProgress>()
@@ -118,17 +118,7 @@ namespace ELearningApp.Data
                 .IsUnique();
 
             // Configure decimal precision
-            builder.Entity<Course>()
-                .Property(c => c.Price)
-                .HasPrecision(18, 2);
-
-            builder.Entity<Course>()
-                .Property(c => c.DiscountPrice)
-                .HasPrecision(18, 2);
-
-            builder.Entity<Enrollment>()
-                .Property(e => e.PaidAmount)
-                .HasPrecision(18, 2);
+            // Pricing configurations removed - all courses are free
         }
     }
 }
