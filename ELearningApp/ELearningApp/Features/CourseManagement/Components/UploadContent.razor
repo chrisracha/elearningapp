@@ -1,8 +1,4 @@
 @page "/instructor/upload-content/{CourseId:int}"
-@using ELearningApp.Models.Entities
-@using ELearningApp.Models.DTOs
-@using ELearningApp.Models.Enums
-@using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
