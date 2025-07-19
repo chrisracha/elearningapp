@@ -1,5 +1,6 @@
 ﻿@page "/"
-@using ELearningApp.Models
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
 @using ELearningApp.Services
 @inject StaticDataService DataService
 @inject NavigationManager Navigation
@@ -46,7 +47,11 @@
                                     _ => "w-8 h-8 text-gray-600"
                                 };
                             }
-                            <TailwindIcon IconType="@category.IconUrl" CssClass="@iconColor" />
+                            <div class="@iconColor">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
                         </div>
                         <div class="flex-1">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">@category.Name</h3>
@@ -218,9 +223,9 @@
 @code {
     private List<Category> categories = new();
     private List<CourseDisplayDto> topCourses = new();
-    private List<Company> trustedCompanies = new();
-    private List<PricingPlan> pricingPlans = new();
-    private List<Testimonial> testimonials = new();
+    private List<ELearningApp.Models.DTOs.Company> trustedCompanies = new();
+    private List<ELearningApp.Models.DTOs.PricingPlan> pricingPlans = new();
+    private List<ELearningApp.Models.DTOs.Testimonial> testimonials = new();
 
     protected override void OnInitialized()
     {

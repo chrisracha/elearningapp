@@ -324,14 +324,6 @@
         {
             isSubmitting = true;
 
-            // Additional validation
-            if (!courseDto.IsValid(out var errors))
-            {
-                var errorMessage = string.Join("\n", errors);
-                await JS.InvokeVoidAsync("alert", errorMessage);
-                return;
-            }
-
             // Get current user
             var currentUser = await UserService.GetCurrentUserAsync();
             if (currentUser == null)
@@ -347,15 +339,13 @@
                 ShortDescription = courseDto.ShortDescription,
                 LongDescription = courseDto.LongDescription,
                 ImageUrl = courseDto.ImageUrl,
-                VideoPreviewUrl = courseDto.VideoPreviewUrl,
-                Price = courseDto.Price,
-                DiscountPrice = courseDto.DiscountPrice,
+                YouTubeVideoId = courseDto.YouTubeVideoId,
+                YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId,
                 Level = courseDto.Level,
                 CategoryId = courseDto.CategoryId,
                 Prerequisites = courseDto.Prerequisites,
                 WhatYouWillLearn = courseDto.WhatYouWillLearn,
                 EstimatedDurationMinutes = courseDto.EstimatedDurationMinutes,
-                IsFeatured = courseDto.IsFeatured,
                 InstructorId = currentUser.Id,
                 Status = CourseStatus.Draft
             };

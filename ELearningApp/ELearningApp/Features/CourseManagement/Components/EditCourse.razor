@@ -481,17 +481,13 @@
                     ShortDescription = course.ShortDescription,
                     LongDescription = course.LongDescription,
                     ImageUrl = course.ImageUrl,
-                    VideoPreviewUrl = course.VideoPreviewUrl,
-                    Price = course.Price,
-                    DiscountPrice = course.DiscountPrice,
+                    YouTubeVideoId = course.YouTubeVideoId,
+                    YouTubePreviewVideoId = course.YouTubePreviewVideoId,
                     Level = course.Level,
-                    CategoryId = course.CategoryId,
+                    CategoryId = course.CategoryId ?? 0,
                     Prerequisites = course.Prerequisites,
                     WhatYouWillLearn = course.WhatYouWillLearn,
-                    EstimatedDurationMinutes = course.EstimatedDurationMinutes,
-                    IsFeatured = course.IsFeatured,
-                    Status = course.Status,
-                    PublishedAt = course.PublishedAt
+                    EstimatedDurationMinutes = course.EstimatedDurationMinutes
                 };
             }
         }
@@ -514,29 +510,18 @@
         {
             isSubmitting = true;
 
-            // Additional validation
-            if (!courseDto.IsValid(out var errors))
-            {
-                var errorMessage = string.Join("\n", errors);
-                await JS.InvokeVoidAsync("alert", errorMessage);
-                return;
-            }
-
             // Update course entity
             course.Title = courseDto.Title;
             course.ShortDescription = courseDto.ShortDescription;
             course.LongDescription = courseDto.LongDescription;
             course.ImageUrl = courseDto.ImageUrl;
-            course.VideoPreviewUrl = courseDto.VideoPreviewUrl;
-            course.Price = courseDto.Price;
-            course.DiscountPrice = courseDto.DiscountPrice;
+            course.YouTubeVideoId = courseDto.YouTubeVideoId;
+            course.YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId;
             course.Level = courseDto.Level;
             course.CategoryId = courseDto.CategoryId;
             course.Prerequisites = courseDto.Prerequisites;
             course.WhatYouWillLearn = courseDto.WhatYouWillLearn;
             course.EstimatedDurationMinutes = courseDto.EstimatedDurationMinutes;
-            course.IsFeatured = courseDto.IsFeatured;
-            course.Status = courseDto.Status;
 
             // Save course
             await CourseService.UpdateCourseAsync(course);

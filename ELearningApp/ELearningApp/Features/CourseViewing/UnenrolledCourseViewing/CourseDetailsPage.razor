@@ -176,7 +176,7 @@
 
                         @if (isEnrolled)
                         {
-                            <button @onclick="() => Navigation.NavigateTo("/course/" + course.Id + "/learn")"
+                            <button @onclick="@(() => Navigation.NavigateTo($"/course/{course.Id}/learn"))"
                                     class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors mb-4">
                                 Continue Learning
                             </button>
