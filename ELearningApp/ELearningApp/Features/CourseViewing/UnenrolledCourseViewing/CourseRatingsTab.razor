@@ -108,7 +108,7 @@
                                 <!-- Review Header -->
                                 <div class="flex items-center justify-between mb-2">
                                     <div>
-                                        <h4 class="font-medium text-gray-900">@(review.User?.FirstName ?? "User")</h4>
+                                        <h4 class="font-medium text-gray-900">@(review.Student?.FirstName ?? "User")</h4>
                                         <div class="flex items-center space-x-2">
                                             <div class="flex items-center">
                                                 @for (int i = 1; i <= 5; i++)
@@ -124,9 +124,9 @@
                                 </div>
 
                                 <!-- Review Content -->
-                                @if (!string.IsNullOrEmpty(review.Comment))
+                                @if (!string.IsNullOrEmpty(review.ReviewText))
                                 {
-                                    <p class="text-gray-700 text-sm leading-relaxed">@review.Comment</p>
+                                    <p class="text-gray-700 text-sm leading-relaxed">@review.ReviewText</p>
                                 }
                                 else
                                 {
@@ -291,7 +291,7 @@
         if (!string.IsNullOrEmpty(searchTerm))
         {
             filteredReviews = filteredReviews
-                .Where(r => r.Comment?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                .Where(r => r.ReviewText?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true)
                 .ToList();
         }
 
