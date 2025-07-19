@@ -1,0 +1,335 @@
+@page "/instructor/courses"
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
+@using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "InstructorOnly")]
+@inject ICourseService CourseService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Course Management - E-Learning Platform</PageTitle>
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Course Management</h1>
+                    <p class="mt-2 text-gray-600">Manage your courses and content</p>
+                </div>
+                <button @onclick="NavigateToCreateCourse" 
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Course
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="bg-white rounded-lg shadow mb-6 p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex-1 max-w-lg">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input @bind="searchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress"
+                               type="text" 
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Search courses...">
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <select @bind="statusFilter" @bind:after="FilterCourses"
+                            class="block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Status</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Published">Published</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Grid -->
+        @if (isLoading)
+        {
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        }
+        else if (filteredCourses?.Any() == true)
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @foreach (var course in filteredCourses)
+                {
+                    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                        <!-- Course Image -->
+                        <div class="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                            @if (!string.IsNullOrEmpty(course.ImageUrl))
+                            {
+                                <img src="@course.ImageUrl" alt="@course.Title" class="w-full h-full object-cover">
+                            }
+                            else
+                            {
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            }
+                            
+                            <!-- Status Badge -->
+                            <div class="absolute top-3 right-3">
+                                <span class="@GetStatusBadgeClass(course.Status) px-2 py-1 text-xs font-semibold rounded-full">
+                                    @course.Status.ToString()
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Course Content -->
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">@course.Title</h3>
+                            <p class="text-sm text-gray-600 mb-3 line-clamp-2">@course.ShortDescription</p>
+                            
+                            <!-- Course Stats -->
+                            <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                                    </svg>
+                                    @course.EnrollmentCount students
+                                </div>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    @course.AverageRating.ToString("F1")
+                                </div>
+                                <div class="font-semibold text-gray-900">₱@course.Price</div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex items-center justify-between gap-2">
+                                <button @onclick="() => EditCourse(course.Id)"
+                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </button>
+                                
+                                <button @onclick="() => UploadContent(course.Id)"
+                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    Upload
+                                </button>
+
+                                <button @onclick="() => ViewCourse(course.Id)"
+                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    View
+                                </button>
+
+                                <div class="relative">
+                                    <button @onclick="() => ToggleDropdown(course.Id)"
+                                            class="inline-flex items-center justify-center w-8 h-8 border border-gray-300 shadow-sm rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    @if (activeDropdown == course.Id)
+                                    {
+                                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10">
+                                            <div class="py-1">
+                                                <button @onclick="() => DeleteCourse(course.Id)"
+                                                        class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900">
+                                                    Delete Course
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Create New Course Card -->
+                <div @onclick="NavigateToCreateCourse" 
+                     class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer border-2 border-dashed border-gray-300 hover:border-blue-500">
+                    <div class="h-full flex flex-col items-center justify-center p-8 text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Create New Course</h3>
+                        <p class="text-sm text-gray-500">Start from scratch or use a template</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Empty State -->
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No courses found</h3>
+                <p class="mt-1 text-sm text-gray-500">Get started by creating your first course.</p>
+                <div class="mt-6">
+                    <button @onclick="NavigateToCreateCourse"
+                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Create Course
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Course>? courses;
+    private List<Course>? filteredCourses;
+    private bool isLoading = true;
+    private string searchTerm = string.Empty;
+    private string statusFilter = string.Empty;
+    private int? activeDropdown;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourses();
+    }
+
+    private async Task LoadCourses()
+    {
+        try
+        {
+            isLoading = true;
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (currentUser != null)
+            {
+                courses = (await CourseService.GetCoursesByInstructorAsync(currentUser.Id)).ToList();
+                filteredCourses = courses;
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading courses:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            return FilterCourses();
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task FilterCourses()
+    {
+        if (courses == null) return Task.CompletedTask;
+
+        filteredCourses = courses.Where(c =>
+            (string.IsNullOrEmpty(searchTerm) || c.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             c.ShortDescription.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(statusFilter) || c.Status.ToString() == statusFilter)
+        ).ToList();
+
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private string GetStatusBadgeClass(CourseStatus status)
+    {
+        return status switch
+        {
+            CourseStatus.Published => "bg-green-100 text-green-800",
+            CourseStatus.Draft => "bg-yellow-100 text-yellow-800",
+            CourseStatus.Archived => "bg-gray-100 text-gray-800",
+            CourseStatus.Suspended => "bg-red-100 text-red-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    private void NavigateToCreateCourse()
+    {
+        Navigation.NavigateTo("/instructor/create-course");
+    }
+
+    private void EditCourse(int courseId)
+    {
+        Navigation.NavigateTo($"/instructor/edit-course/{courseId}");
+    }
+
+    private void UploadContent(int courseId)
+    {
+        Navigation.NavigateTo($"/instructor/upload-content/{courseId}");
+    }
+
+    private void ViewCourse(int courseId)
+    {
+        Navigation.NavigateTo($"/course/{courseId}");
+    }
+
+    private void ToggleDropdown(int courseId)
+    {
+        activeDropdown = activeDropdown == courseId ? null : courseId;
+        StateHasChanged();
+    }
+
+    private async Task DeleteCourse(int courseId)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this course? This action cannot be undone."))
+        {
+            try
+            {
+                var success = await CourseService.DeleteCourseAsync(courseId);
+                if (success)
+                {
+                    await LoadCourses();
+                    await JS.InvokeVoidAsync("alert", "Course deleted successfully.");
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("alert", "Failed to delete course.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await JS.InvokeVoidAsync("alert", $"Error deleting course: {ex.Message}");
+            }
+        }
+        
+        activeDropdown = null;
+        StateHasChanged();
+    }
+} 
