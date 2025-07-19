@@ -50,7 +50,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach (var category in categories)
                     {
-                        <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                        <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100 cursor-pointer"
+                             @onclick="() => ViewCoursesByCategory(category.Id)">
                             <div class="flex items-start space-x-4">
                                 <div class="w-16 h-16 @category.Color rounded-lg flex items-center justify-center flex-shrink-0">
                                     @{
@@ -246,29 +247,50 @@
 
     protected override async Task OnInitializedAsync()
     {
-        categories = DataService.GetCategories();
-        
-        var realCourses = await CourseService.GetAllCoursesAsync();
-        topCourses = realCourses.Take(6).Select(c => new CourseDisplayDto
+        try
         {
-            Id = c.Id,
-            Title = c.Title,
-            Description = c.ShortDescription,
-            InstructorName = (c.Instructor != null) ? $"{c.Instructor.FirstName} {c.Instructor.LastName}".Trim() : "No Instructor",
-            ImageUrl = c.ImageUrl ?? "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            Rating = c.AverageRating,
-            ReviewCount = c.ReviewCount,
-            Duration = $"{c.EstimatedDurationMinutes / 60}h {c.EstimatedDurationMinutes % 60}m"
-        }).ToList();
-        
-        trustedCompanies = DataService.GetTrustedCompanies();
-        pricingPlans = DataService.GetPricingPlans();
-        testimonials = DataService.GetTestimonials();
+            categories = DataService.GetCategories();
+            
+            var realCourses = await CourseService.GetAllCoursesAsync();
+            topCourses = realCourses.Take(6).Select(c => new CourseDisplayDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.ShortDescription,
+                InstructorName = (c.Instructor != null) ? $"{c.Instructor.FirstName} {c.Instructor.LastName}".Trim() : "No Instructor",
+                ImageUrl = c.ImageUrl ?? "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                Rating = c.AverageRating,
+                ReviewCount = c.ReviewCount,
+                Duration = $"{c.EstimatedDurationMinutes / 60}h {c.EstimatedDurationMinutes % 60}m",
+                IsBestseller = c.ReviewCount > 50000 && c.AverageRating >= 4.5, // Mark as bestseller if many reviews and high rating
+                CategoryId = c.CategoryId ?? 0,
+                Level = c.Level.ToString()
+            }).ToList();
+            
+            trustedCompanies = DataService.GetTrustedCompanies();
+            pricingPlans = DataService.GetPricingPlans();
+            testimonials = DataService.GetTestimonials();
+        }
+        catch (Exception ex)
+        {
+            // In case of error, still show categories and static data, but leave courses empty
+            Console.WriteLine($"Error loading course data: {ex.Message}");
+            categories = DataService.GetCategories();
+            topCourses = new List<CourseDisplayDto>();
+            trustedCompanies = DataService.GetTrustedCompanies();
+            pricingPlans = DataService.GetPricingPlans();
+            testimonials = DataService.GetTestimonials();
+        }
     }
 
     private void ViewCourse(int courseId)
     {
         Navigation.NavigateTo($"/course/{courseId}");
+    }
+
+    private void ViewCoursesByCategory(int categoryId)
+    {
+        Navigation.NavigateTo($"/courses?category={categoryId}");
     }
 
     private void Search()
