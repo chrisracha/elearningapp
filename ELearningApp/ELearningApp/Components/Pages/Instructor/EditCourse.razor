@@ -149,7 +149,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Revenue</dt>
-                                    <dd class="text-lg font-medium text-gray-900">₱@((course?.EnrollmentCount ?? 0) * course?.Price ?? 0)</dd>
+                                    <dd class="text-lg font-medium text-gray-900">N/A (Free Course)</dd>
                                 </dl>
                             </div>
                         </div>
@@ -288,41 +288,35 @@
 
                             <!-- Pricing Section -->
                             <div class="border-b border-gray-200 pb-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Pricing</h3>
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">YouTube Videos</h3>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <!-- Regular Price -->
+                                    <!-- YouTube Video ID -->
                                     <div>
-                                        <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Regular Price (₱) <span class="text-red-500">*</span>
+                                        <label for="youtubeVideoId" class="block text-sm font-medium text-gray-700 mb-2">
+                                            YouTube Video ID
                                         </label>
                                         <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span class="text-gray-500 sm:text-sm">₱</span>
-                                            </div>
-                                            <InputNumber @bind-Value="courseDto.Price" 
-                                                         id="price"
-                                                         class="block w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                                         placeholder="0.00" />
+                                            <InputText @bind-Value="courseDto.YouTubeVideoId"
+                                                       id="youtubeVideoId"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                                       placeholder="e.g., dQw4w9WgXcQ" />
                                         </div>
-                                        <ValidationMessage For="@(() => courseDto.Price)" class="text-red-600 text-sm mt-1" />
+                                        <p class="text-sm text-gray-500 mt-1">Enter the YouTube video ID for the main course content</p>
                                     </div>
 
-                                    <!-- Discount Price -->
+                                    <!-- YouTube Preview Video ID -->
                                     <div>
-                                        <label for="discountPrice" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Discount Price (₱)
+                                        <label for="youtubePreviewVideoId" class="block text-sm font-medium text-gray-700 mb-2">
+                                            YouTube Preview Video ID
                                         </label>
                                         <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span class="text-gray-500 sm:text-sm">₱</span>
-                                            </div>
-                                            <InputNumber @bind-Value="courseDto.DiscountPrice" 
-                                                         id="discountPrice"
-                                                         class="block w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                                         placeholder="0.00" />
+                                            <InputText @bind-Value="courseDto.YouTubePreviewVideoId"
+                                                       id="youtubePreviewVideoId"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                                       placeholder="e.g., jNQXAC9IVRw" />
                                         </div>
-                                        <ValidationMessage For="@(() => courseDto.DiscountPrice)" class="text-red-600 text-sm mt-1" />
+                                        <p class="text-sm text-gray-500 mt-1">Enter the YouTube video ID for course preview (optional)</p>
                                     </div>
                                 </div>
                             </div>
@@ -481,17 +475,13 @@
                     ShortDescription = course.ShortDescription,
                     LongDescription = course.LongDescription,
                     ImageUrl = course.ImageUrl,
-                    VideoPreviewUrl = course.VideoPreviewUrl,
-                    Price = course.Price,
-                    DiscountPrice = course.DiscountPrice,
+                    YouTubeVideoId = course.YouTubeVideoId,
+                    YouTubePreviewVideoId = course.YouTubePreviewVideoId,
                     Level = course.Level,
-                    CategoryId = course.CategoryId,
+                    CategoryId = course.CategoryId ?? 0,
                     Prerequisites = course.Prerequisites,
                     WhatYouWillLearn = course.WhatYouWillLearn,
-                    EstimatedDurationMinutes = course.EstimatedDurationMinutes,
-                    IsFeatured = course.IsFeatured,
-                    Status = course.Status,
-                    PublishedAt = course.PublishedAt
+                    EstimatedDurationMinutes = course.EstimatedDurationMinutes
                 };
             }
         }
@@ -527,16 +517,13 @@
             course.ShortDescription = courseDto.ShortDescription;
             course.LongDescription = courseDto.LongDescription;
             course.ImageUrl = courseDto.ImageUrl;
-            course.VideoPreviewUrl = courseDto.VideoPreviewUrl;
-            course.Price = courseDto.Price;
-            course.DiscountPrice = courseDto.DiscountPrice;
+            course.YouTubeVideoId = courseDto.YouTubeVideoId;
+            course.YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId;
             course.Level = courseDto.Level;
             course.CategoryId = courseDto.CategoryId;
             course.Prerequisites = courseDto.Prerequisites;
             course.WhatYouWillLearn = courseDto.WhatYouWillLearn;
             course.EstimatedDurationMinutes = courseDto.EstimatedDurationMinutes;
-            course.IsFeatured = courseDto.IsFeatured;
-            course.Status = courseDto.Status;
 
             // Save course
             await CourseService.UpdateCourseAsync(course);

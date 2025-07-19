@@ -92,9 +92,9 @@
                         <div class="flex items-start space-x-4">
                             <!-- User Avatar -->
                             <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                                @if (!string.IsNullOrEmpty(review.User?.ProfileImageUrl))
+                                @if (!string.IsNullOrEmpty(review.Student?.ProfileImageUrl))
                                 {
-                                    <img src="@review.User.ProfileImageUrl" alt="@review.User.FirstName" class="w-full h-full object-cover rounded-full">
+                                    <img src="@review.Student.ProfileImageUrl" alt="@review.Student.FirstName" class="w-full h-full object-cover rounded-full">
                                 }
                                 else
                                 {

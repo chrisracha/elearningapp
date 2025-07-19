@@ -72,12 +72,10 @@ namespace ELearningApp.Models.DTOs
         public string? SearchTerm { get; set; }
         public int? CategoryId { get; set; }
         public CourseLevel? Level { get; set; }
-        public decimal? MinPrice { get; set; }
-        public decimal? MaxPrice { get; set; }
         public double? MinRating { get; set; }
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 12;
-        public string SortBy { get; set; } = "newest"; // newest, rating, price, popular
+        public string SortBy { get; set; } = "newest"; // newest, rating, popular
     }
 
     public class CourseStatsDto
@@ -86,7 +84,6 @@ namespace ELearningApp.Models.DTOs
         public int PublishedCourses { get; set; }
         public int DraftCourses { get; set; }
         public int TotalStudents { get; set; }
-        public decimal TotalRevenue { get; set; }
         public double AverageRating { get; set; }
     }
 } 

@@ -116,7 +116,7 @@ namespace ELearningApp.Services
                 return await _context.Courses
                     .Include(c => c.Category)
                     .Include(c => c.Instructor)
-                    .Where(c => c.IsFeatured && c.Status == CourseStatus.Published)
+                    .Where(c => c.Status == CourseStatus.Published)
                     .OrderByDescending(c => c.AverageRating)
                     .Take(8)
                     .ToListAsync();
