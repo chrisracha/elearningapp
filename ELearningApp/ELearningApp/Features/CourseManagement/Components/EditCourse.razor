@@ -472,12 +472,12 @@
             // Update course entity
             course.Title = courseDto.Title;
             course.ShortDescription = courseDto.ShortDescription;
-            course.LongDescription = courseDto.LongDescription;
+            course.LongDescription = courseDto.LongDescription ?? string.Empty;
             course.ImageUrl = courseDto.ImageUrl;
             course.YouTubeVideoId = courseDto.YouTubeVideoId;
             course.YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId;
             course.Level = courseDto.Level;
-            course.CategoryId = courseDto.CategoryId;
+            course.CategoryId = courseDto.CategoryId == 0 ? null : courseDto.CategoryId;
             course.Prerequisites = courseDto.Prerequisites;
             course.WhatYouWillLearn = courseDto.WhatYouWillLearn;
             course.EstimatedDurationMinutes = courseDto.EstimatedDurationMinutes;
