@@ -1,4 +1,6 @@
-using ELearningApp.Models;
+using ELearningApp.Models.Entities;
+using ELearningApp.Models.Enums;
+using ELearningApp.Models.DTOs;
 
 namespace ELearningApp.Services;
 
@@ -65,11 +67,11 @@ public class StaticDataService
         };
     }
 
-    public List<Course> GetTopCourses()
+    public List<CourseDisplayDto> GetTopCourses()
     {
-        return new List<Course>
+        return new List<CourseDisplayDto>
         {
-            new Course
+            new CourseDisplayDto
             {
                 Id = 1,
                 Title = "Complete Data Science Bootcamp",
@@ -84,7 +86,7 @@ public class StaticDataService
                 IsBestseller = true,
                 Duration = "42 hours"
             },
-            new Course
+            new CourseDisplayDto
             {
                 Id = 2,
                 Title = "Modern Web Development",
@@ -99,7 +101,7 @@ public class StaticDataService
                 IsBestseller = false,
                 Duration = "56 hours"
             },
-            new Course
+            new CourseDisplayDto
             {
                 Id = 3,
                 Title = "Complete Programming Course",

@@ -40,6 +40,9 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 builder.Services.AddScoped<StaticDataService>();
 
+// Register Course Management Services
+builder.Services.AddScoped<ICourseService, CourseService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,5 +1,6 @@
 ﻿@page "/"
-@using ELearningApp.Models
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
 @using ELearningApp.Services
 @using ELearningApp.Components.Shared
 @inject StaticDataService DataService
@@ -217,7 +218,7 @@
 
 @code {
     private List<Category> categories = new();
-    private List<Course> topCourses = new();
+    private List<CourseDisplayDto> topCourses = new();
     private List<Company> trustedCompanies = new();
     private List<PricingPlan> pricingPlans = new();
     private List<Testimonial> testimonials = new();
