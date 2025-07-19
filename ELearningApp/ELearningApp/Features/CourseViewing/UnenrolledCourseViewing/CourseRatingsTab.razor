@@ -250,11 +250,12 @@
         } 
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         // TODO: Load actual reviews from the service
         // For now, using sample data
         filteredReviews = reviews;
+        return Task.CompletedTask;
     }
 
     private int GetRatingPercentage(int starRating)

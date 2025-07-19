@@ -286,7 +286,8 @@
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("console.error", "Error loading course:", ex.Message);
+            // Log error to server console instead of JavaScript console during static rendering
+            System.Console.WriteLine($"Error loading course: {ex.Message}");
         }
         finally
         {

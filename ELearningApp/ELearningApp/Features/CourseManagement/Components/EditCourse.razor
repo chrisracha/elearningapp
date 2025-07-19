@@ -472,7 +472,7 @@
             // Update course entity
             course.Title = courseDto.Title;
             course.ShortDescription = courseDto.ShortDescription;
-            course.LongDescription = courseDto.LongDescription;
+            course.LongDescription = courseDto.LongDescription ?? string.Empty;
             course.ImageUrl = courseDto.ImageUrl;
             course.YouTubeVideoId = courseDto.YouTubeVideoId;
             course.YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId;

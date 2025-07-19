@@ -309,7 +309,7 @@
             {
                 Title = courseDto.Title,
                 ShortDescription = courseDto.ShortDescription,
-                LongDescription = courseDto.LongDescription,
+                LongDescription = courseDto.LongDescription ?? string.Empty,
                 ImageUrl = courseDto.ImageUrl,
                 YouTubeVideoId = courseDto.YouTubeVideoId,
                 YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId,

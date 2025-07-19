@@ -31,8 +31,21 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+// Use SQLite for development if LocalDB is not available (cross-platform compatibility)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase) && !OperatingSystem.IsWindows())
+    {
+        // Use SQLite for development on non-Windows platforms
+        var sqliteConnection = "Data Source=elearning.db";
+        options.UseSqlite(sqliteConnection);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => 
