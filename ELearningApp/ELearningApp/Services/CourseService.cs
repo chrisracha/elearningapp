@@ -408,7 +408,7 @@ namespace ELearningApp.Services
         }
 
         public async Task<IEnumerable<Course>> FilterCoursesAsync(int? categoryId = null, CourseLevel? level = null, 
-            decimal? minPrice = null, decimal? maxPrice = null, double? minRating = null, int pageNumber = 1, int pageSize = 12)
+            double? minRating = null, int pageNumber = 1, int pageSize = 12)
         {
             try
             {
@@ -422,12 +422,6 @@ namespace ELearningApp.Services
 
                 if (level.HasValue)
                     query = query.Where(c => c.Level == level.Value);
-
-                if (minPrice.HasValue)
-                    query = query.Where(c => c.Price >= minPrice.Value);
-
-                if (maxPrice.HasValue)
-                    query = query.Where(c => c.Price <= maxPrice.Value);
 
                 if (minRating.HasValue)
                     query = query.Where(c => c.AverageRating >= minRating.Value);
@@ -543,7 +537,6 @@ namespace ELearningApp.Services
                     return false;
 
                 course.Status = CourseStatus.Published;
-                course.PublishedAt = DateTime.UtcNow;
                 course.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
