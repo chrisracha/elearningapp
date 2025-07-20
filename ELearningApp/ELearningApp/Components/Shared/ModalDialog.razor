@@ -1,19 +1,16 @@
 @if (IsVisible)
 {
-    <div class="fixed inset-0 z-[99999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 99999;">
+    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 999999 !important;">
         <!-- Background overlay -->
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
             <!-- Background with lower z-index -->
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-                 style="z-index: 99998;" 
+                 style="z-index: 999998 !important;" 
                  @onclick="OnBackgroundClick"></div>
 
-            <!-- This element is used to center the modal contents -->
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
             <!-- Modal panel with highest z-index -->
-            <div class="@GetModalSizeClass() inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full relative" 
-                 style="z-index: 99999;">
+            <div class="@GetModalSizeClass() relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all max-w-lg w-full" 
+                 style="z-index: 999999 !important;">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         @if (ShowIcon)

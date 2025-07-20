@@ -5,17 +5,21 @@
 
 <style>
     .modal-container {
-        position: relative;
-        z-index: 99999 !important;
-        pointer-events: none;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 999999 !important;
+        pointer-events: none !important;
     }
     
     .modal-container > * {
-        pointer-events: auto;
+        pointer-events: auto !important;
     }
 </style>
 
-<div class="modal-container" style="position: relative; z-index: 99999;">
+<div class="modal-container">
     <ModalDialog IsVisible="isModalVisible"
                  Title="@currentModal?.Title"
                  Message="@currentModal?.Message"
@@ -36,15 +40,11 @@
         ModalService.OnShowModal += ShowModal;
     }
 
-    private void ShowModal(ModalInfo modalInfo)
+    private async void ShowModal(ModalInfo modalInfo)
     {
         currentModal = modalInfo;
         isModalVisible = true;
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-            return Task.CompletedTask;
-        });
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleConfirmed()
