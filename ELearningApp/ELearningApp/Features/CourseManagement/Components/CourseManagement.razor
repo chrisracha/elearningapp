@@ -114,7 +114,7 @@
                                     @if (activeDropdown == course.Id)
                                     {
                                         <div class="absolute left-0 top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5" 
-                                             style="min-width: 12rem; z-index: 1002; position: absolute;">
+                                             style="min-width: 12rem; z-index: 9999 !important; position: absolute;">
                                             <div class="py-1">
                                                 <button @onclick="() => EditCourse(course.Id)"
                                                         @onclick:stopPropagation="true"

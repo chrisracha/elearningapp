@@ -31,7 +31,7 @@ builder.Services.AddAuthentication(options =>
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => 
@@ -127,6 +127,14 @@ if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
     {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+        
+        // Ensure database is created
+        dbContext.Database.EnsureCreated();
+        
+        // Seed data
+        await seeder.SeedAsync();
     }
 }
 

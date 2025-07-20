@@ -247,12 +247,11 @@
 <!-- Add Module Modal -->
 @if (showAddModuleModal)
 {
-    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 99999;">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" style="z-index: 99998;" @onclick="() => showAddModuleModal = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 999998 !important;">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" style="z-index: 999997 !important;" @onclick="() => showAddModuleModal = false"></div>
             
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative" style="z-index: 99999;">
+            <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all max-w-lg w-full" style="z-index: 999998 !important;">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Module</h3>
                     <div class="space-y-4">
@@ -288,12 +287,11 @@
 <!-- Add Lesson Modal -->
 @if (showAddLessonModal)
 {
-    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 99999;">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" style="z-index: 99998;" @onclick="() => showAddLessonModal = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 999998 !important;">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" style="z-index: 999997 !important;" @onclick="() => showAddLessonModal = false"></div>
             
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full relative" style="z-index: 99999;">
+            <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all max-w-2xl w-full" style="z-index: 999998 !important; max-height: 90vh; overflow-y: auto;">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Lesson</h3>
                     <div class="space-y-4">
