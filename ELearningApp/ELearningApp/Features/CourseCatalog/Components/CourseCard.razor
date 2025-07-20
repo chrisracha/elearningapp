@@ -39,12 +39,21 @@
             <!-- Course Description -->
             <p class="text-sm text-gray-600 mb-4 line-clamp-3">@GetSafeDescription()</p>
             
-            <!-- Instructor - Now Clickable -->
+            <!-- Instructor - Now with Profile Image -->
             <div class="flex items-center mb-4">
-                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
-                    <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                    </svg>
+                <div class="w-8 h-8 rounded-full mr-3 flex-shrink-0 overflow-hidden bg-gray-300">
+                    @if (!string.IsNullOrEmpty(Course.Instructor?.ProfileImageUrl))
+                    {
+                        <img src="@Course.Instructor.ProfileImageUrl" alt="@GetSafeInstructorName()" class="w-full h-full object-cover">
+                    }
+                    else
+                    {
+                        <div class="w-full h-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    }
                 </div>
                 <button @onclick="OnInstructorClick"
                         @onclick:stopPropagation="true"

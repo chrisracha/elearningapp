@@ -116,8 +116,22 @@
                             <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">@course.Title</h3>
                             <p class="text-sm text-gray-600 mb-3 line-clamp-3">@course.Description</p>
                             
-                            <!-- Clickable Instructor Name -->
-                            <div class="mb-4">
+                            <!-- Instructor with Profile Image -->
+                            <div class="flex items-center mb-4">
+                                <div class="w-8 h-8 rounded-full mr-3 flex-shrink-0 overflow-hidden bg-gray-300">
+                                    @if (!string.IsNullOrEmpty(course.InstructorProfileImageUrl))
+                                    {
+                                        <img src="@course.InstructorProfileImageUrl" alt="@course.InstructorName" class="w-full h-full object-cover">
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                    }
+                                </div>
                                 <button @onclick="() => ViewInstructor(course.InstructorId)"
                                         @onclick:stopPropagation="true"
                                         class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
@@ -300,6 +314,7 @@
                         Description = c.ShortDescription ?? "No description available",
                         InstructorName = (c.Instructor != null) ? $"{c.Instructor.FirstName} {c.Instructor.LastName}".Trim() : "No Instructor",
                         InstructorId = c.InstructorId ?? "",
+                        InstructorProfileImageUrl = c.Instructor?.ProfileImageUrl,
                         ImageUrl = c.ImageUrl ?? "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                         Rating = c.AverageRating,
                         ReviewCount = c.ReviewCount,
@@ -320,6 +335,7 @@
                         Description = "Error loading course description",
                         InstructorName = "Unknown Instructor",
                         InstructorId = "",
+                        InstructorProfileImageUrl = null,
                         ImageUrl = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                         Rating = 0,
                         ReviewCount = 0,

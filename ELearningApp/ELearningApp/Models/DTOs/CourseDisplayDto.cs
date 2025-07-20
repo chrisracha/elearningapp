@@ -7,6 +7,7 @@ namespace ELearningApp.Models.DTOs
         public string Description { get; set; } = string.Empty;
         public string InstructorName { get; set; } = string.Empty;
         public string InstructorId { get; set; } = string.Empty;
+        public string? InstructorProfileImageUrl { get; set; }
         public string ImageUrl { get; set; } = string.Empty;
         public string? YouTubeVideoId { get; set; }
         public string? YouTubePreviewVideoId { get; set; }

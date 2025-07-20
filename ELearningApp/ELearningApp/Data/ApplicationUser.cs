@@ -13,15 +13,15 @@ namespace ELearningApp.Data
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         
-        // Profile Information (only fields that exist in database)
+        // Profile Information
         public string? ProfileImageUrl { get; set; }
         public string? Bio { get; set; }
         
-        // Additional fields commented out until proper migration is created
-        // public string? CompanyName { get; set; }
-        // public string? WebsiteUrl { get; set; }
-        // public string? LinkedInUrl { get; set; }
-        // public string? TwitterUrl { get; set; }
+        // Social Media and External Links
+        public string? CompanyName { get; set; }
+        public string? WebsiteUrl { get; set; }
+        public string? LinkedInUrl { get; set; }
+        public string? TwitterUrl { get; set; }
         
         // Navigation properties
         public virtual ICollection<Course> CoursesAsInstructor { get; set; } = new List<Course>();
