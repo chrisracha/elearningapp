@@ -33,7 +33,12 @@
                         <p class="text-lg text-gray-600 mb-4">@course.ShortDescription</p>
                         
                         <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                            <span>by <strong class="text-gray-900">@course.Instructor.FirstName @course.Instructor.LastName</strong></span>
+                            <span>by 
+                                <button @onclick="() => ViewInstructor(course.InstructorId)"
+                                        class="font-medium text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                    @course.Instructor.FirstName @course.Instructor.LastName
+                                </button>
+                            </span>
                             <span class="flex items-center">
                                 @for (int i = 1; i <= 5; i++)
                                 {
@@ -115,7 +120,13 @@
                                         </div>
                                         <div class="p-4">
                                             <h4 class="font-semibold text-gray-900 mb-2">@relatedCourse.Title</h4>
-                                            <p class="text-sm text-gray-600 mb-2">@relatedCourse.Instructor.FirstName @relatedCourse.Instructor.LastName</p>
+                                            <div class="mb-2">
+                                                <button @onclick="() => ViewInstructor(relatedCourse.InstructorId)"
+                                                        @onclick:stopPropagation="true"
+                                                        class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                                    @relatedCourse.Instructor.FirstName @relatedCourse.Instructor.LastName
+                                                </button>
+                                            </div>
                                             <p class="text-xs text-gray-500 mb-3">@relatedCourse.ShortDescription</p>
                                             <div class="flex items-center justify-between">
                                                 <span class="font-bold text-green-600">Free</span>
@@ -134,7 +145,13 @@
                     @if (instructorCourses.Any())
                     {
                         <div class="mb-8">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from @course.Instructor.FirstName @course.Instructor.LastName</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">
+                                Get more from 
+                                <button @onclick="() => ViewInstructor(course.InstructorId)"
+                                        class="text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                    @course.Instructor.FirstName @course.Instructor.LastName
+                                </button>
+                            </h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 @foreach (var instructorCourse in instructorCourses.Take(3))
                                 {
@@ -153,7 +170,13 @@
                                         </div>
                                         <div class="p-4">
                                             <h4 class="font-semibold text-gray-900 mb-2">@instructorCourse.Title</h4>
-                                            <p class="text-sm text-gray-600 mb-2">@instructorCourse.Instructor.FirstName @instructorCourse.Instructor.LastName</p>
+                                            <div class="mb-2">
+                                                <button @onclick="() => ViewInstructor(instructorCourse.InstructorId)"
+                                                        @onclick:stopPropagation="true"
+                                                        class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                                    @instructorCourse.Instructor.FirstName @instructorCourse.Instructor.LastName
+                                                </button>
+                                            </div>
                                             <p class="text-xs text-gray-500 mb-3">@instructorCourse.ShortDescription</p>
                                             <div class="flex items-center justify-between">
                                                 <span class="font-bold text-green-600">Free</span>
@@ -329,6 +352,21 @@
         return activeTab == tab 
             ? "border-primary-500 text-primary-600" 
             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
+    }
+
+    private void ViewInstructor(string instructorId)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(instructorId))
+            {
+                Navigation.NavigateTo($"/instructor/{instructorId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Instructor navigation error: {ex.Message}");
+        }
     }
 
     private async Task EnrollInCourse()

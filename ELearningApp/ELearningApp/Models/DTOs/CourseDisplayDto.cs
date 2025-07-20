@@ -6,6 +6,7 @@ namespace ELearningApp.Models.DTOs
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string InstructorName { get; set; } = string.Empty;
+        public string InstructorId { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
         public string? YouTubeVideoId { get; set; }
         public string? YouTubePreviewVideoId { get; set; }
@@ -51,4 +52,4 @@ namespace ELearningApp.Models.DTOs
         public string AvatarUrl { get; set; } = string.Empty;
         public double Rating { get; set; }
     }
-} 
+}

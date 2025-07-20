@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.DTOs
 @using ELearningApp.Services
@@ -115,7 +115,15 @@
                         <div class="p-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">@course.Title</h3>
                             <p class="text-sm text-gray-600 mb-3 line-clamp-3">@course.Description</p>
-                            <p class="text-sm text-gray-700 mb-4">@course.InstructorName</p>
+                            
+                            <!-- Clickable Instructor Name -->
+                            <div class="mb-4">
+                                <button @onclick="() => ViewInstructor(course.InstructorId)"
+                                        @onclick:stopPropagation="true"
+                                        class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                    @course.InstructorName
+                                </button>
+                            </div>
                             
                             <div class="flex items-center mb-4">
                                 <div class="flex items-center space-x-1">
@@ -291,6 +299,7 @@
                         Title = c.Title ?? "Untitled Course",
                         Description = c.ShortDescription ?? "No description available",
                         InstructorName = (c.Instructor != null) ? $"{c.Instructor.FirstName} {c.Instructor.LastName}".Trim() : "No Instructor",
+                        InstructorId = c.InstructorId ?? "",
                         ImageUrl = c.ImageUrl ?? "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                         Rating = c.AverageRating,
                         ReviewCount = c.ReviewCount,
@@ -310,6 +319,7 @@
                         Title = "Course Title Error",
                         Description = "Error loading course description",
                         InstructorName = "Unknown Instructor",
+                        InstructorId = "",
                         ImageUrl = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                         Rating = 0,
                         ReviewCount = 0,
@@ -358,6 +368,21 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Navigation error: {ex.Message}");
+        }
+    }
+
+    private void ViewInstructor(string instructorId)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(instructorId))
+            {
+                Navigation.NavigateTo($"/instructor/{instructorId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Instructor navigation error: {ex.Message}");
         }
     }
 

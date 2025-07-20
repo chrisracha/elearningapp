@@ -1,5 +1,6 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.Enums
+@inject NavigationManager Navigation
 
 <div class="space-y-6">
     <!-- Course Stats -->
@@ -129,17 +130,21 @@
         </div>
     }
 
-    <!-- Instructor Info -->
+    <!-- Instructor Info - Now Clickable -->
     <div class="space-y-3 pt-6 border-t border-gray-200">
         <h3 class="font-semibold text-gray-900">Instructor</h3>
         <div class="flex items-center space-x-4">
-            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer"
+                 @onclick="() => ViewInstructor(Course.InstructorId)">
                 <svg class="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                 </svg>
             </div>
-            <div>
-                <h4 class="text-lg font-semibold text-gray-900">@Course.Instructor.FirstName @Course.Instructor.LastName</h4>
+            <div class="flex-1">
+                <button @onclick="() => ViewInstructor(Course.InstructorId)"
+                        class="text-left text-lg font-semibold text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                    @Course.Instructor.FirstName @Course.Instructor.LastName
+                </button>
                 <p class="text-sm text-gray-600 mb-2">Professional Instructor</p>
                 <div class="flex items-center text-sm text-gray-500">
                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -154,10 +159,19 @@
 
 @code {
     [Parameter] public Course Course { get; set; } = null!;
-    [Parameter] public EventCallback<string> OnViewInstructor { get; set; }
 
-    private async Task ViewInstructor(string instructorId)
+    private void ViewInstructor(string instructorId)
     {
-        await OnViewInstructor.InvokeAsync(instructorId);
+        try
+        {
+            if (!string.IsNullOrEmpty(instructorId))
+            {
+                Navigation.NavigateTo($"/instructor/{instructorId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Instructor navigation error: {ex.Message}");
+        }
     }
-} 
+}
