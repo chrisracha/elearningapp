@@ -1,0 +1,213 @@
+@if (IsVisible)
+{
+    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Background overlay -->
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @onclick="OnBackgroundClick"></div>
+
+            <!-- Modal panel -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div class="@GetModalSizeClass() inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        @if (ShowIcon)
+                        {
+                            <div class="@GetIconBackgroundClass() mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                                @if (Type == ModalType.Warning || Type == ModalType.Confirm)
+                                {
+                                    <svg class="@GetIconColorClass() h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                }
+                                else if (Type == ModalType.Error)
+                                {
+                                    <svg class="@GetIconColorClass() h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                }
+                                else if (Type == ModalType.Success)
+                                {
+                                    <svg class="@GetIconColorClass() h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <svg class="@GetIconColorClass() h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                }
+                            </div>
+                        }
+                        
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            @if (!string.IsNullOrEmpty(Title))
+                            {
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">@Title</h3>
+                            }
+                            @if (!string.IsNullOrEmpty(Message))
+                            {
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 whitespace-pre-line">@Message</p>
+                                </div>
+                            }
+                            @if (ChildContent != null)
+                            {
+                                <div class="mt-2">
+                                    @ChildContent
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    @if (Type == ModalType.Confirm)
+                    {
+                        <button type="button" @onclick="OnConfirm"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            @ConfirmText
+                        </button>
+                        <button type="button" @onclick="OnCancel"
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            @CancelText
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" @onclick="OnClose"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 @GetPrimaryButtonClass() text-base font-medium text-white hover:@GetPrimaryButtonHoverClass() focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            @CloseText
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public ModalType Type { get; set; } = ModalType.Info;
+    [Parameter] public ModalSize Size { get; set; } = ModalSize.Medium;
+    [Parameter] public bool ShowIcon { get; set; } = true;
+    [Parameter] public bool AllowBackgroundClose { get; set; } = true;
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public string CloseText { get; set; } = "OK";
+    [Parameter] public EventCallback OnConfirmed { get; set; }
+    [Parameter] public EventCallback OnCancelled { get; set; }
+    [Parameter] public EventCallback OnClosed { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task OnConfirm()
+    {
+        IsVisible = false;
+        await OnConfirmed.InvokeAsync();
+    }
+
+    private async Task OnCancel()
+    {
+        IsVisible = false;
+        await OnCancelled.InvokeAsync();
+    }
+
+    private async Task OnClose()
+    {
+        IsVisible = false;
+        await OnClosed.InvokeAsync();
+    }
+
+    private async Task OnBackgroundClick()
+    {
+        if (AllowBackgroundClose)
+        {
+            if (Type == ModalType.Confirm)
+            {
+                await OnCancel();
+            }
+            else
+            {
+                await OnClose();
+            }
+        }
+    }
+
+    private string GetModalSizeClass()
+    {
+        return Size switch
+        {
+            ModalSize.Small => "sm:max-w-sm",
+            ModalSize.Medium => "sm:max-w-lg",
+            ModalSize.Large => "sm:max-w-2xl",
+            ModalSize.ExtraLarge => "sm:max-w-4xl",
+            _ => "sm:max-w-lg"
+        };
+    }
+
+    private string GetIconBackgroundClass()
+    {
+        return Type switch
+        {
+            ModalType.Error => "bg-red-100",
+            ModalType.Warning => "bg-yellow-100",
+            ModalType.Confirm => "bg-red-100",
+            ModalType.Success => "bg-green-100",
+            _ => "bg-blue-100"
+        };
+    }
+
+    private string GetIconColorClass()
+    {
+        return Type switch
+        {
+            ModalType.Error => "text-red-600",
+            ModalType.Warning => "text-yellow-600",
+            ModalType.Confirm => "text-red-600",
+            ModalType.Success => "text-green-600",
+            _ => "text-blue-600"
+        };
+    }
+
+    private string GetPrimaryButtonClass()
+    {
+        return Type switch
+        {
+            ModalType.Error => "bg-red-600",
+            ModalType.Warning => "bg-yellow-600",
+            ModalType.Success => "bg-green-600",
+            _ => "bg-primary-600"
+        };
+    }
+
+    private string GetPrimaryButtonHoverClass()
+    {
+        return Type switch
+        {
+            ModalType.Error => "bg-red-700",
+            ModalType.Warning => "bg-yellow-700",
+            ModalType.Success => "bg-green-700",
+            _ => "bg-primary-700"
+        };
+    }
+
+    public enum ModalType
+    {
+        Info,
+        Success,
+        Warning,
+        Error,
+        Confirm
+    }
+
+    public enum ModalSize
+    {
+        Small,
+        Medium,
+        Large,
+        ExtraLarge
+    }
+}

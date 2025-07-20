@@ -69,6 +69,9 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
+// Register Modal Service
+builder.Services.AddScoped<IModalService, ModalService>();
+
 // Add Authorization Policies
 builder.Services.AddAuthorizationCore(options =>
 {

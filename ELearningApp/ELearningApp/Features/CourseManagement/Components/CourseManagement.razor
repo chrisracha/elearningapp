@@ -4,11 +4,12 @@
 @using ELearningApp.Models.Enums
 @using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
+@using static ELearningApp.Components.Shared.ModalDialog
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
 @inject IUserService UserService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
+@inject IModalService ModalService
 @rendermode InteractiveServer
 
 <PageTitle>Course Management - E-Learning Platform</PageTitle>
@@ -272,7 +273,8 @@
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("console.error", "Error loading courses:", ex.Message);
+            // Use console.error for development debugging
+            await Task.Run(() => Console.WriteLine($"Error loading courses: {ex.Message}"));
         }
         finally
         {
@@ -355,7 +357,7 @@
             var currentUser = await UserService.GetCurrentUserAsync();
             if (currentUser == null)
             {
-                await JS.InvokeVoidAsync("alert", "Unable to identify current user.");
+                await ModalService.ShowAlertAsync("Error", "Unable to identify current user.", ModalType.Error);
                 return;
             }
 
@@ -374,24 +376,24 @@
                 confirmMessage = "Are you sure you want to delete this course? This action cannot be undone.";
             }
 
-            if (await JS.InvokeAsync<bool>("confirm", confirmMessage))
+            if (await ModalService.ShowConfirmAsync("Confirm Delete", confirmMessage, "Delete", "Cancel"))
             {
                 var (success, message) = await CourseService.DeleteCourseWithValidationAsync(courseId, currentUser.Id);
                 
                 if (success)
                 {
                     await LoadCourses();
-                    await JS.InvokeVoidAsync("alert", message);
+                    await ModalService.ShowAlertAsync("Success", message, ModalType.Success);
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("alert", message);
+                    await ModalService.ShowAlertAsync("Error", message, ModalType.Error);
                 }
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error deleting course: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error deleting course: {ex.Message}", ModalType.Error);
         }
         finally
         {

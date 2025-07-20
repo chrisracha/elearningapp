@@ -5,12 +5,13 @@
 @using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using static ELearningApp.Components.Shared.ModalDialog
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
 @inject IUserService UserService
 @inject StaticDataService StaticDataService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
+@inject IModalService ModalService
 @rendermode InteractiveServer
 
 <PageTitle>Create Course - E-Learning Platform</PageTitle>
@@ -301,7 +302,7 @@
             var currentUser = await UserService.GetCurrentUserAsync();
             if (currentUser == null)
             {
-                await JS.InvokeVoidAsync("alert", "Unable to identify current user.");
+                await ModalService.ShowAlertAsync("Error", "Unable to identify current user.", ModalType.Error);
                 return;
             }
 
@@ -326,12 +327,12 @@
             // Save course
             await CourseService.CreateCourseAsync(course);
 
-            await JS.InvokeVoidAsync("alert", "Course created successfully!");
+            await ModalService.ShowAlertAsync("Success", "Course created successfully!", ModalType.Success);
             Navigation.NavigateTo("/instructor/courses");
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error creating course: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error creating course: {ex.Message}", ModalType.Error);
         }
         finally
         {
@@ -344,4 +345,4 @@
     {
         Navigation.NavigateTo("/instructor/courses");
     }
-} 
+}

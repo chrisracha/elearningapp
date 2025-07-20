@@ -11,6 +11,8 @@
 @inject StaticDataService StaticDataService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@using static ELearningApp.Components.Shared.ModalDialog
+@inject IModalService ModalService
 @rendermode InteractiveServer
 
 <PageTitle>Edit Course - E-Learning Platform</PageTitle>
@@ -56,7 +58,7 @@
                             <button @onclick="UnpublishCourse" 
                                     class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 4h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17.294 15"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 008.736 4h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17.294 15"></path>
                                 </svg>
                                 Unpublish
                             </button>
@@ -486,12 +488,12 @@
             // Save course
             await CourseService.UpdateCourseAsync(course!);
 
-            await JS.InvokeVoidAsync("alert", "Course updated successfully!");
+            await ModalService.ShowAlertAsync("Success", "Course updated successfully!", ModalType.Success);
             Navigation.NavigateTo("/instructor/courses");
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error updating course: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error updating course: {ex.Message}", ModalType.Error);
         }
         finally
         {
@@ -502,47 +504,60 @@
 
     private async Task PublishCourse()
     {
-        if (course == null) return;
-
         try
         {
-            var success = await CourseService.PublishCourseAsync(course.Id);
-            if (success)
+            if (course?.Status == CourseStatus.Published)
+                return;
+
+            var result = await CourseService.PublishCourseAsync(course!.Id);
+            if (result)
             {
-                await LoadCourse();
-                await JS.InvokeVoidAsync("alert", "Course published successfully!");
+                course!.Status = CourseStatus.Published;
+                await ModalService.ShowAlertAsync("Success", "Course published successfully!", ModalType.Success);
+                StateHasChanged();
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to publish course.");
+                await ModalService.ShowAlertAsync("Error", "Failed to publish course.", ModalType.Error);
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error publishing course: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error publishing course: {ex.Message}", ModalType.Error);
         }
     }
 
     private async Task UnpublishCourse()
     {
-        if (course == null) return;
-
         try
         {
-            var success = await CourseService.UnpublishCourseAsync(course.Id);
-            if (success)
+            if (course?.Status != CourseStatus.Published)
+                return;
+
+            var confirmed = await ModalService.ShowConfirmAsync(
+                "Confirm Unpublish", 
+                "Are you sure you want to unpublish this course? Students will no longer be able to enroll.",
+                "Unpublish",
+                "Cancel");
+
+            if (confirmed)
             {
-                await LoadCourse();
-                await JS.InvokeVoidAsync("alert", "Course unpublished successfully!");
-            }
-            else
-            {
-                await JS.InvokeVoidAsync("alert", "Failed to unpublish course.");
+                var result = await CourseService.UnpublishCourseAsync(course!.Id);
+                if (result)
+                {
+                    course!.Status = CourseStatus.Draft;
+                    await ModalService.ShowAlertAsync("Success", "Course unpublished successfully!", ModalType.Success);
+                    StateHasChanged();
+                }
+                else
+                {
+                    await ModalService.ShowAlertAsync("Error", "Failed to unpublish course.", ModalType.Error);
+                }
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error unpublishing course: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error unpublishing course: {ex.Message}", ModalType.Error);
         }
     }
 
@@ -562,4 +577,4 @@
     {
         Navigation.NavigateTo("/instructor/courses");
     }
-} 
+}

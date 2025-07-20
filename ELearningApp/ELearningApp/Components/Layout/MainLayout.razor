@@ -1,4 +1,5 @@
 ﻿@using ELearningApp.Components.Layout
+@using ELearningApp.Components.Shared
 @inherits LayoutComponentBase
 
 <div class="min-h-screen flex flex-col">
@@ -13,6 +14,9 @@
     <!-- Footer -->
     <Footer />
 </div>
+
+<!-- Global Modal Provider -->
+<GlobalModalProvider />
 
 <!-- Error UI -->
 <div id="blazor-error-ui" data-nosnippet class="hidden fixed bottom-0 left-0 right-0 bg-red-600 text-white p-4 shadow-lg z-50">

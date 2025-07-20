@@ -1,0 +1,78 @@
+@using ELearningApp.Services
+@using static ELearningApp.Components.Shared.ModalDialog
+@inject IModalService ModalService
+@implements IDisposable
+
+<ModalDialog IsVisible="isModalVisible"
+             Title="@currentModal?.Title"
+             Message="@currentModal?.Message"
+             Type="@(currentModal?.Type ?? ModalType.Info)"
+             ConfirmText="@(currentModal?.ConfirmText ?? "Confirm")"
+             CancelText="@(currentModal?.CancelText ?? "Cancel")"
+             OnConfirmed="HandleConfirmed"
+             OnCancelled="HandleCancelled"
+             OnClosed="HandleClosed" />
+
+@code {
+    private bool isModalVisible = false;
+    private ModalInfo? currentModal;
+
+    protected override void OnInitialized()
+    {
+        ModalService.OnShowModal += ShowModal;
+        ModalService.OnHideModal += HideModal;
+    }
+
+    private void ShowModal(ModalInfo modalInfo)
+    {
+        currentModal = modalInfo;
+        isModalVisible = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HideModal()
+    {
+        isModalVisible = false;
+        currentModal = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleConfirmed()
+    {
+        isModalVisible = false;
+        if (currentModal?.OnConfirmed != null)
+        {
+            await currentModal.OnConfirmed();
+        }
+        currentModal = null;
+        StateHasChanged();
+    }
+
+    private async Task HandleCancelled()
+    {
+        isModalVisible = false;
+        if (currentModal?.OnCancelled != null)
+        {
+            await currentModal.OnCancelled();
+        }
+        currentModal = null;
+        StateHasChanged();
+    }
+
+    private async Task HandleClosed()
+    {
+        isModalVisible = false;
+        if (currentModal?.OnClosed != null)
+        {
+            await currentModal.OnClosed();
+        }
+        currentModal = null;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ModalService.OnShowModal -= ShowModal;
+        ModalService.OnHideModal -= HideModal;
+    }
+}

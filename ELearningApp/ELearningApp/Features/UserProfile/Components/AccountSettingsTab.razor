@@ -1,7 +1,8 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Services
+@using static ELearningApp.Components.Shared.ModalDialog
 @inject IUserService UserService
-@inject IJSRuntime JS
+@inject IModalService ModalService
 @inject NavigationManager Navigation
 
 <div class="space-y-6">
@@ -227,11 +228,11 @@
             isSavingPrivacy = true;
             // In a real app, you would save these settings to the database
             await Task.Delay(1000); // Simulate API call
-            await JS.InvokeVoidAsync("alert", "Privacy settings saved successfully!");
+            await ModalService.ShowAlertAsync("Success", "Privacy settings saved successfully!", ModalType.Success);
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error saving privacy settings: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error saving privacy settings: {ex.Message}", ModalType.Error);
         }
         finally
         {
@@ -242,13 +243,17 @@
 
     private async Task ShowPasswordStrength()
     {
-        await JS.InvokeVoidAsync("alert", "Password Tips:\n\n• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid common words and patterns\n• Don't reuse passwords from other sites");
+        var message = "Password Tips:\n\n• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid common words and patterns\n• Don't reuse passwords from other sites";
+        await ModalService.ShowAlertAsync("Password Security Tips", message, ModalType.Info);
     }
 
     private async Task ShowDeleteAccountDialog()
     {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", 
-            "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.");
+        var confirmed = await ModalService.ShowConfirmAsync(
+            "Delete Account", 
+            "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.",
+            "Delete Account",
+            "Cancel");
         
         if (confirmed)
         {
@@ -262,4 +267,4 @@
         public bool ShareProgress { get; set; } = true;
         public bool EmailNotifications { get; set; } = true;
     }
-} 
+}
