@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ELearningApp.Wasm.Data;
 using ELearningApp.Wasm.Models.Enums;
 
 namespace ELearningApp.Wasm.Models.Entities

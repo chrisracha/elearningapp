@@ -1,91 +1,64 @@
-using ELearningApp.Wasm.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
+using ELearningApp.Wasm.Models;
 
-namespace ELearningApp.Wasm.Services;
-
-public class UserService : IUserService
+namespace ELearningApp.Wasm.Services
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ApplicationDbContext _context;
-    private readonly ILogger<UserService> _logger;
-
-    public UserService(
-        UserManager<ApplicationUser> userManager,
-        IHttpContextAccessor httpContextAccessor,
-        ApplicationDbContext context,
-        ILogger<UserService> logger)
+    public class UserService : IUserService
     {
-        _userManager = userManager;
-        _httpContextAccessor = httpContextAccessor;
-        _context = context;
-        _logger = logger;
-    }
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<UserService> _logger;
 
-    public async Task<ApplicationUser?> GetCurrentUserAsync()
-    {
-        try
+        public UserService(HttpClient httpClient, ILogger<UserService> logger)
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-            if (user?.Identity?.IsAuthenticated == true)
+            _httpClient = httpClient;
+            _logger = logger;
+        }
+
+        public async Task<ApplicationUser?> GetCurrentUserAsync()
+        {
+            try
             {
-                return await _userManager.GetUserAsync(user);
+                return await _httpClient.GetFromJsonAsync<ApplicationUser>("api/user/current");
             }
-            return null;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user");
+                return null;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting current user");
-            return null;
-        }
-    }
 
-    public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
-    {
-        try
+        public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
         {
-            return await _userManager.FindByIdAsync(userId);
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApplicationUser>($"api/user/{userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting user by ID {UserId}", userId);
+                return null;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting user by ID {UserId}", userId);
-            return null;
-        }
-    }
 
-    public async Task<bool> IsUserInstructorAsync(string userId)
-    {
-        try
+        public async Task<bool> UpdateUserProfileAsync(ApplicationUser user)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            return user?.IsInstructor == true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error checking if user {UserId} is instructor", userId);
-            return false;
-        }
-    }
-
-    public async Task<bool> SetUserInstructorStatusAsync(string userId, bool isInstructor)
-    {
-        try
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync("api/user/profile", user);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user profile");
                 return false;
-
-            user.IsInstructor = isInstructor;
-            var result = await _userManager.UpdateAsync(user);
-
-            _logger.LogInformation("Updated instructor status for user {UserId} to {IsInstructor}", userId, isInstructor);
-            return result.Succeeded;
+            }
         }
-        catch (Exception ex)
+
+        // Simplified method signatures for WASM - no need for complex server operations
+        public async Task<bool> IsUserInstructorAsync(string userId)
         {
-            _logger.LogError(ex, "Error setting instructor status for user {UserId}", userId);
-            return false;
+            var user = await GetUserByIdAsync(userId);
+            return user?.IsInstructor ?? false;
         }
     }
-} 
+}

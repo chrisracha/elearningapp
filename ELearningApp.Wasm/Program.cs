@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.LocalStorage;
-using ELearningApp.Wasm.Wasm;
-using ELearningApp.Wasm.Wasm.Services;
+using ELearningApp.Wasm;
+using ELearningApp.Wasm.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -19,9 +19,8 @@ builder.Services.AddBlazoredLocalStorage();
 // Add custom authentication state provider
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 
-// Add your services (adapted for HTTP calls)
-builder.Services.AddScoped<ICourseService, CourseService>();
+// Add simplified services for now
+builder.Services.AddScoped<ISimpleCourseService, SimpleCourseService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<StaticDataService>();
 
 await builder.Build().RunAsync();

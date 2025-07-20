@@ -1,4 +1,4 @@
-using ELearningApp.Wasm.Data;
+using ELearningApp.Wasm.Models;
 
 namespace ELearningApp.Wasm.Services;
 
@@ -6,6 +6,6 @@ public interface IUserService
 {
     Task<ApplicationUser?> GetCurrentUserAsync();
     Task<ApplicationUser?> GetUserByIdAsync(string userId);
+    Task<bool> UpdateUserProfileAsync(ApplicationUser user);
     Task<bool> IsUserInstructorAsync(string userId);
-    Task<bool> SetUserInstructorStatusAsync(string userId, bool isInstructor);
 } 
