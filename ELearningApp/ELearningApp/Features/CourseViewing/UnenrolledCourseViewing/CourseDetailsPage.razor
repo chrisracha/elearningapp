@@ -93,7 +93,9 @@
                         }
                         else if (activeTab == CourseTab.Contents)
                         {
-                            <CourseContentsPreviewTab Course="course" />
+                            <CourseContentsPreviewTab Course="course" 
+                                                    OnEnrollClick="@EnrollInCourse"
+                                                    OnStartLearning="@(() => Navigation.NavigateTo($"/course/{course.Id}/learn"))" />
                         }
                     </div>
 

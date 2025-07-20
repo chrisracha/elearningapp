@@ -24,10 +24,10 @@
 
             <!-- Main Navigation -->
             <nav class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                <a href="/" class="@GetNavLinkClasses("/") font-medium transition-colors">
                     Home
                 </a>
-                <a href="/catalog" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                <a href="/catalog" class="@GetNavLinkClasses("/catalog") font-medium transition-colors">
                     Explore
                 </a>
                 
@@ -36,29 +36,14 @@
                         @if (currentUser != null && currentUser.IsInstructor)
                         {
                             <!-- Instructor Navigation -->
-                            <div class="relative group">
-                                <button class="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center">
-                                    Instructor
-                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                                
-                                <!-- Dropdown Menu -->
-                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                    <a href="/instructor/courses" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        My Courses
-                                    </a>
-                                    <a href="/instructor/courses/create" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Create Course
-                                    </a>
-                                </div>
-                            </div>
+                            <a href="/instructor/courses" class="@GetNavLinkClasses("/instructor/courses") font-medium transition-colors">
+                                Manage
+                            </a>
                         }
                         else
                         {
                             <!-- Student Navigation -->
-                            <a href="/dashboard" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                            <a href="/dashboard" class="@GetNavLinkClasses("/dashboard") font-medium transition-colors">
                                 My Learning
                             </a>
                         }
@@ -130,10 +115,10 @@
         {
             <div class="md:hidden border-t border-gray-200 pt-4 pb-4">
                 <div class="space-y-2">
-                    <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                    <a href="/" class="block px-3 py-2 text-base font-medium @GetMobileNavLinkClasses("/") hover:bg-gray-50 rounded-md">
                         Home
                     </a>
-                    <a href="/catalog" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                    <a href="/catalog" class="block px-3 py-2 text-base font-medium @GetMobileNavLinkClasses("/catalog") hover:bg-gray-50 rounded-md">
                         Explore
                     </a>
                     
@@ -141,19 +126,13 @@
                         <Authorized>
                             @if (currentUser != null && currentUser.IsInstructor)
                             {
-                                <div class="px-3 py-2">
-                                    <div class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Instructor</div>
-                                    <a href="/instructor/courses" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
-                                        My Courses
-                                    </a>
-                                    <a href="/instructor/courses/create" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
-                                        Create Course
-                                    </a>
-                                </div>
+                                <a href="/instructor/courses" class="block px-3 py-2 text-base font-medium @GetMobileNavLinkClasses("/instructor/courses") hover:bg-gray-50 rounded-md">
+                                    Manage
+                                </a>
                             }
                             else
                             {
-                                <a href="/dashboard" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                                <a href="/dashboard" class="block px-3 py-2 text-base font-medium @GetMobileNavLinkClasses("/dashboard") hover:bg-gray-50 rounded-md">
                                     My Learning
                                 </a>
                             }
@@ -249,5 +228,43 @@
         {
             Console.WriteLine($"Error navigating to dashboard: {ex.Message}");
         }
+    }
+
+    private string GetNavLinkClasses(string path)
+    {
+        var currentPath = "/" + CurrentUrl.Trim('/');
+        var targetPath = path.Trim('/');
+        
+        // Handle exact matches and special cases
+        if (currentPath == "/" && targetPath == "")
+        {
+            return "text-blue-600 hover:text-blue-700";
+        }
+        
+        if (targetPath != "" && currentPath.StartsWith("/" + targetPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return "text-blue-600 hover:text-blue-700";
+        }
+        
+        return "text-gray-700 hover:text-primary-600";
+    }
+
+    private string GetMobileNavLinkClasses(string path)
+    {
+        var currentPath = "/" + CurrentUrl.Trim('/');
+        var targetPath = path.Trim('/');
+        
+        // Handle exact matches and special cases
+        if (currentPath == "/" && targetPath == "")
+        {
+            return "text-blue-600";
+        }
+        
+        if (targetPath != "" && currentPath.StartsWith("/" + targetPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return "text-blue-600";
+        }
+        
+        return "text-gray-700 hover:text-primary-600";
     }
 }

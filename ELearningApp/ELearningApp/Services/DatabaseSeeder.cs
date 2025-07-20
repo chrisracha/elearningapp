@@ -23,12 +23,29 @@ namespace ELearningApp.Services
             await _context.Database.EnsureCreatedAsync();
             
             // Check if we already have users
-            if (await _userManager.Users.AnyAsync())
+            var hasUsers = await _userManager.Users.AnyAsync();
+            
+            if (hasUsers)
             {
                 // Update existing instructor images if they're using old URLs
                 await UpdateInstructorImagesAsync();
-                return; // Database already seeded
+                
+                // Check if we need to seed reviews (even if users exist)
+                var hasReviews = await _context.CourseReviews.AnyAsync();
+                if (!hasReviews)
+                {
+                    Console.WriteLine("🔄 Users exist but no reviews found. Seeding reviews...");
+                    await SeedReviewsAsync();
+                }
+                else
+                {
+                    Console.WriteLine("✅ Database already seeded with users and reviews");
+                }
+                
+                return;
             }
+
+            Console.WriteLine("🌱 Seeding fresh database...");
 
             // Seed categories
             await SeedCategoriesAsync();
@@ -42,8 +59,10 @@ namespace ELearningApp.Services
             // Seed other courses
             await SeedOtherCoursesAsync();
             
-            // Seed student enrollments
+            // Seed student enrollments (this also calls SeedReviewsAsync)
             await SeedEnrollmentsAsync();
+
+            Console.WriteLine("✅ Database seeding completed");
         }
 
         private async Task UpdateInstructorImagesAsync()
@@ -720,6 +739,9 @@ Optimization strategies:
 
             // Create sample announcements
             await SeedAnnouncementsAsync();
+
+            // Create sample reviews
+            await SeedReviewsAsync();
         }
 
         private async Task SeedAnnouncementsAsync()
@@ -809,6 +831,289 @@ You've got this! 💪",
 
             _context.CourseAnnouncements.AddRange(announcements);
             await _context.SaveChangesAsync();
+        }
+
+        private async Task SeedReviewsAsync()
+        {
+            // Check if reviews already exist
+            var existingReviews = await _context.CourseReviews.AnyAsync();
+            if (existingReviews)
+            {
+                Console.WriteLine("✅ Reviews already exist, skipping review seeding");
+                return;
+            }
+
+            var blazorInstructor = await _userManager.FindByEmailAsync("blazor.instructor@example.com");
+            var student = await _userManager.FindByEmailAsync("student@example.com");
+            var allCourses = await _context.Courses.ToListAsync();
+
+            if (!allCourses.Any())
+            {
+                Console.WriteLine("⚠️ No courses found, cannot seed reviews");
+                return;
+            }
+
+            // Create additional demo users for more diverse reviews
+            var reviewers = new List<ApplicationUser>();
+
+            var demoUsers = new[]
+            {
+                new ApplicationUser
+                {
+                    UserName = "john.doe@example.com",
+                    Email = "john.doe@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "John",
+                    LastName = "Doe",
+                    IsInstructor = false,
+                    IsActive = true,
+                    Bio = "Software developer passionate about learning new technologies.",
+                    ProfileImageUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ApplicationUser
+                {
+                    UserName = "alice.smith@example.com",
+                    Email = "alice.smith@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "Alice",
+                    LastName = "Smith",
+                    IsInstructor = false,
+                    IsActive = true,
+                    Bio = "Full-stack developer with a love for clean code and user experience.",
+                    ProfileImageUrl = "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ApplicationUser
+                {
+                    UserName = "mike.wilson@example.com",
+                    Email = "mike.wilson@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "Mike",
+                    LastName = "Wilson",
+                    IsInstructor = false,
+                    IsActive = true,
+                    Bio = "Frontend developer transitioning to full-stack development.",
+                    ProfileImageUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ApplicationUser
+                {
+                    UserName = "sarah.brown@example.com",
+                    Email = "sarah.brown@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "Sarah",
+                    LastName = "Brown",
+                    IsInstructor = false,
+                    IsActive = true,
+                    Bio = "CS student eager to learn modern web development frameworks.",
+                    ProfileImageUrl = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new ApplicationUser
+                {
+                    UserName = "david.lee@example.com",
+                    Email = "david.lee@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "David",
+                    LastName = "Lee",
+                    IsInstructor = false,
+                    IsActive = true,
+                    Bio = "Backend developer looking to expand skills in frontend technologies.",
+                    ProfileImageUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            // Create demo users if they don't exist
+            foreach (var user in demoUsers)
+            {
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                if (existingUser == null)
+                {
+                    var result = await _userManager.CreateAsync(user, "Password123!");
+                    if (result.Succeeded)
+                    {
+                        reviewers.Add(user);
+                        Console.WriteLine($"✅ Created demo user: {user.Email}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"❌ Failed to create demo user: {user.Email}");
+                    }
+                }
+                else
+                {
+                    reviewers.Add(existingUser);
+                }
+            }
+
+            // Add existing student to reviewers
+            if (student != null)
+            {
+                reviewers.Add(student);
+            }
+
+            if (!reviewers.Any())
+            {
+                Console.WriteLine("⚠️ No reviewers available, cannot seed reviews");
+                return;
+            }
+
+            var reviews = new List<CourseReview>();
+
+            // Sample review templates for different ratings
+            var excellentReviews = new[]
+            {
+                "Outstanding course! The instructor explains complex concepts clearly and the hands-on projects really helped me understand the material. Highly recommended for anyone looking to master this technology.",
+                "This course exceeded my expectations. The content is well-structured, up-to-date, and practical. I was able to apply what I learned immediately in my work projects.",
+                "Absolutely fantastic! Sarah's teaching style is engaging and the course materials are comprehensive. The best investment I've made in my professional development.",
+                "Incredible course with real-world examples and practical exercises. The instructor's expertise shines through every lesson. Worth every minute!",
+                "Perfect for both beginners and intermediate learners. The progressive difficulty and excellent explanations make complex topics easy to understand.",
+                "Top-notch content and presentation. This course has significantly improved my skills and confidence in using these technologies professionally."
+            };
+
+            var goodReviews = new[]
+            {
+                "Good course overall with solid content. The exercises are helpful and the instructor knows the subject well. A few sections could be explained in more detail.",
+                "Well-structured course that covers the fundamentals effectively. I appreciate the practical approach and real-world examples provided.",
+                "Very informative and useful course. The pace is good and the content is relevant. Some video quality could be improved but the material is excellent.",
+                "Solid course that delivers on its promises. Good balance of theory and practice. Would recommend to others looking to learn this technology.",
+                "Comprehensive coverage of the topic with good examples. The instructor is knowledgeable and presents the material clearly."
+            };
+
+            var averageReviews = new[]
+            {
+                "Decent course with good information. Some sections are better than others. Overall helpful but could use some improvements in pacing.",
+                "The course covers the basics well but lacks depth in some areas. Good for beginners but more advanced topics could be expanded.",
+                "Useful content but the presentation could be more engaging. The exercises are helpful for practice."
+            };
+
+            var poorReviews = new[]
+            {
+                "The course has some good information but the presentation could be improved. Some concepts need better explanation.",
+                "Basic coverage of the topic. Expected more depth and practical examples."
+            };
+
+            // Generate reviews for each course
+            foreach (var course in allCourses)
+            {
+                var reviewCount = Math.Min(reviewers.Count, 10); // Limit to available reviewers or 10 reviews
+                var avgRating = course.AverageRating;
+
+                // Generate realistic distribution of reviews based on average rating
+                var numReviewsToGenerate = Math.Min(reviewCount, Math.Max(3, course.ReviewCount / 200)); // Generate a subset of total reviews, minimum 3
+
+                // Shuffle reviewers to get random selection
+                var shuffledReviewers = reviewers.OrderBy(x => Random.Shared.Next()).Take(numReviewsToGenerate).ToList();
+
+                for (int i = 0; i < shuffledReviewers.Count; i++)
+                {
+                    var reviewer = shuffledReviewers[i];
+                    
+                    // Determine rating based on course's average rating
+                    var rating = GenerateRealisticRating(avgRating);
+                    var reviewText = GetReviewTextForRating(rating, excellentReviews, goodReviews, averageReviews, poorReviews);
+                    
+                    var review = new CourseReview
+                    {
+                        CourseId = course.Id,
+                        StudentId = reviewer.Id,
+                        Rating = rating,
+                        ReviewText = reviewText,
+                        IsVerifiedPurchase = true, // All demo reviews are from enrolled students
+                        CreatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 365)),
+                        UpdatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 365))
+                    };
+
+                    reviews.Add(review);
+                }
+            }
+
+            if (reviews.Any())
+            {
+                _context.CourseReviews.AddRange(reviews);
+                await _context.SaveChangesAsync();
+                
+                Console.WriteLine($"✅ Created {reviews.Count} reviews for {allCourses.Count} courses");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No reviews were created");
+            }
+        }
+
+        private int GenerateRealisticRating(double averageRating)
+        {
+            // Generate ratings that cluster around the average rating
+            var random = Random.Shared.NextDouble();
+            
+            if (averageRating >= 4.5)
+            {
+                // High-rated course - mostly 4-5 stars
+                return random switch
+                {
+                    < 0.7 => 5,
+                    < 0.9 => 4,
+                    < 0.95 => 3,
+                    < 0.98 => 2,
+                    _ => 1
+                };
+            }
+            else if (averageRating >= 4.0)
+            {
+                // Good course - mostly 3-5 stars
+                return random switch
+                {
+                    < 0.4 => 5,
+                    < 0.7 => 4,
+                    < 0.9 => 3,
+                    < 0.97 => 2,
+                    _ => 1
+                };
+            }
+            else if (averageRating >= 3.5)
+            {
+                // Average course - spread across 2-5 stars
+                return random switch
+                {
+                    < 0.2 => 5,
+                    < 0.5 => 4,
+                    < 0.8 => 3,
+                    < 0.95 => 2,
+                    _ => 1
+                };
+            }
+            else
+            {
+                // Lower-rated course - more spread
+                return random switch
+                {
+                    < 0.1 => 5,
+                    < 0.3 => 4,
+                    < 0.6 => 3,
+                    < 0.8 => 2,
+                    _ => 1
+                };
+            }
+        }
+
+        private string GetReviewTextForRating(int rating, string[] excellent, string[] good, string[] average, string[] poor)
+        {
+            return rating switch
+            {
+                5 => excellent[Random.Shared.Next(excellent.Length)],
+                4 => good[Random.Shared.Next(good.Length)],
+                3 => average[Random.Shared.Next(average.Length)],
+                2 => poor[Random.Shared.Next(poor.Length)],
+                1 => poor[Random.Shared.Next(poor.Length)],
+                _ => "Good course overall."
+            };
         }
     }
 }

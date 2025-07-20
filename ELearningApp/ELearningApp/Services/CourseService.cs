@@ -1049,11 +1049,14 @@ namespace ELearningApp.Services
         {
             try
             {
-                return await _context.CourseReviews
+                var reviews = await _context.CourseReviews
                     .Include(cr => cr.Student)
                     .Where(cr => cr.CourseId == courseId)
                     .OrderByDescending(cr => cr.CreatedAt)
                     .ToListAsync();
+
+                _logger.LogInformation("Retrieved {ReviewCount} reviews for course {CourseId}", reviews.Count, courseId);
+                return reviews;
             }
             catch (Exception ex)
             {

@@ -1,5 +1,8 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@inject ICourseService CourseService
+@inject IUserService UserService
 
 <div class="space-y-4">
     <!-- Course Contents List -->
@@ -26,9 +29,12 @@
                 <div class="divide-y divide-gray-100">
                     @if (module.Lessons?.Any() == true)
                     {
-                        @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex).Take(3))
+                        @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
                         {
-                            <div class="px-4 py-3 hover:bg-gray-50 transition-colors">
+                            var canAccess = IsEnrolled || lesson.IsFree;
+                            var isLocked = !canAccess;
+                            
+                            <div class="px-4 py-3 @(isLocked ? "bg-gray-50" : "")">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
                                         <!-- Lesson Type Icon -->
@@ -69,10 +75,10 @@
 
                                         <!-- Lesson Info -->
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">@lesson.Title</p>
+                                            <p class="text-sm font-medium @(isLocked ? "text-gray-400" : "text-gray-900")">@lesson.Title</p>
                                             @if (!string.IsNullOrEmpty(lesson.Description))
                                             {
-                                                <p class="text-xs text-gray-500 truncate">@lesson.Description</p>
+                                                <p class="text-xs @(isLocked ? "text-gray-300" : "text-gray-500") mt-1">@lesson.Description</p>
                                             }
                                         </div>
                                     </div>
@@ -81,14 +87,20 @@
                                         <!-- Duration -->
                                         @if (lesson.DurationMinutes > 0)
                                         {
-                                            <span class="text-xs text-gray-500">@lesson.DurationMinutes min</span>
+                                            <span class="text-xs @(isLocked ? "text-gray-300" : "text-gray-500")">@lesson.DurationMinutes min</span>
                                         }
 
-                                        <!-- Preview Badge -->
+                                        <!-- Access Status -->
                                         @if (lesson.IsFree)
                                         {
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                 Preview
+                                            </span>
+                                        }
+                                        else if (IsEnrolled)
+                                        {
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Unlocked
                                             </span>
                                         }
                                         else
@@ -99,15 +111,6 @@
                                         }
                                     </div>
                                 </div>
-                            </div>
-                        }
-
-                        @if (module.Lessons.Count() > 3)
-                        {
-                            <div class="px-4 py-3 text-center">
-                                <button class="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                                    Show @(module.Lessons.Count() - 3) more lessons
-                                </button>
                             </div>
                         }
                     }
@@ -123,56 +126,55 @@
                 </div>
             </div>
         }
+
+        <!-- Course Summary for Enrolled Users -->
+        @if (IsEnrolled)
+        {
+            <div class="mt-8 bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">You're Enrolled!</h3>
+                <p class="text-gray-600 mb-4">
+                    You have full access to all course materials. Start learning now!
+                </p>
+                <button @onclick="OnStartLearning"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Start Learning
+                </button>
+            </div>
+        }
+        else
+        {
+            <!-- Enrollment Call-to-Action for Unenrolled Users -->
+            <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Enroll to Access Full Course Content</h3>
+                <p class="text-gray-600 mb-4">
+                    Get lifetime access to all course materials, including videos, articles, quizzes, and downloadable resources.
+                </p>
+                <button @onclick="OnEnrollClick"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    Enroll Now
+                </button>
+            </div>
+        }
     }
     else
     {
-        <!-- Sample Course Structure -->
-        <div class="space-y-4">
-            <!-- Sample Items -->
-            @for (int i = 1; i <= 4; i++)
-            {
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <span class="text-sm font-medium text-gray-900">Item @i</span>
-                        </div>
-                        @if (i == 1)
-                        {
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                Preview
-                            </span>
-                        }
-                        else
-                        {
-                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- Enrollment Call-to-Action -->
-        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Enroll to Access Full Course Content</h3>
-            <p class="text-gray-600 mb-4">
-                Get lifetime access to all course materials, including videos, articles, quizzes, and downloadable resources.
-            </p>
-            <button @onclick="OnEnrollClick"
-                    class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                Enroll Now
-            </button>
+        <!-- No modules found -->
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No Course Content Available</h3>
+            <p class="mt-1 text-sm text-gray-500">This course doesn't have any modules or lessons yet.</p>
         </div>
     }
 </div>
@@ -180,4 +182,38 @@
 @code {
     [Parameter] public Course Course { get; set; } = null!;
     [Parameter] public EventCallback OnEnrollClick { get; set; }
-} 
+    [Parameter] public EventCallback OnStartLearning { get; set; }
+
+    private bool IsEnrolled { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckEnrollmentStatus();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CheckEnrollmentStatus();
+    }
+
+    private async Task CheckEnrollmentStatus()
+    {
+        try
+        {
+            if (Course != null)
+            {
+                var currentUser = await UserService.GetCurrentUserAsync();
+                if (currentUser != null)
+                {
+                    IsEnrolled = await CourseService.IsStudentEnrolledAsync(Course.Id, currentUser.Id);
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // If there's an error checking enrollment, assume not enrolled for safety
+            IsEnrolled = false;
+        }
+    }
+}
