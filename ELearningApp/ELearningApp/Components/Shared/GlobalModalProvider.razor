@@ -20,20 +20,12 @@
     protected override void OnInitialized()
     {
         ModalService.OnShowModal += ShowModal;
-        ModalService.OnHideModal += HideModal;
     }
 
     private void ShowModal(ModalInfo modalInfo)
     {
         currentModal = modalInfo;
         isModalVisible = true;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void HideModal()
-    {
-        isModalVisible = false;
-        currentModal = null;
         InvokeAsync(StateHasChanged);
     }
 
@@ -73,6 +65,5 @@
     public void Dispose()
     {
         ModalService.OnShowModal -= ShowModal;
-        ModalService.OnHideModal -= HideModal;
     }
 }

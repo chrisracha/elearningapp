@@ -11,13 +11,11 @@ namespace ELearningApp.Services
         void ShowConfirm(string title, string message, Func<Task> onConfirm, string confirmText = "Confirm", string cancelText = "Cancel");
         
         event Action<ModalInfo>? OnShowModal;
-        event Action? OnHideModal;
     }
 
     public class ModalService : IModalService
     {
         public event Action<ModalInfo>? OnShowModal;
-        public event Action? OnHideModal;
 
         private TaskCompletionSource<bool>? _confirmTaskSource;
 

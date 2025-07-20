@@ -165,7 +165,7 @@
                                 Get more from 
                                 <button @onclick="() => ViewInstructor(course.InstructorId)"
                                         class="text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
-                                    @course.Instructor.FirstName @course.Instructor.LastName
+                                    @course.Instructor?.FirstName @course.Instructor?.LastName
                                 </button>
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -204,7 +204,7 @@
                                                 <button @onclick="() => ViewInstructor(instructorCourse.InstructorId)"
                                                         @onclick:stopPropagation="true"
                                                         class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
-                                                    @instructorCourse.Instructor?.FirstName @instructorCourse.Instructor?.LastName
+                                                    @(instructorCourse.Instructor?.FirstName ?? "Unknown") @(instructorCourse.Instructor?.LastName ?? "Instructor")
                                                 </button>
                                             </div>
                                             <p class="text-xs text-gray-500 mb-3">@instructorCourse.ShortDescription</p>

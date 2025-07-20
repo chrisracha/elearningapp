@@ -933,7 +933,7 @@ You've got this! 💪",
             // Create demo users if they don't exist
             foreach (var user in demoUsers)
             {
-                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                var existingUser = await _userManager.FindByEmailAsync(user.Email!);
                 if (existingUser == null)
                 {
                     var result = await _userManager.CreateAsync(user, "Password123!");
