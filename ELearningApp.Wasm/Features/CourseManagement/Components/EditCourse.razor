@@ -1,0 +1,564 @@
+@page "/instructor/edit-course/{CourseId:int}"
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
+@using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Policy = "InstructorOnly")]
+@inject ICourseService CourseService
+@inject IUserService UserService
+@inject StaticDataService StaticDataService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Edit Course - E-Learning Platform</PageTitle>
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+                        <a href="/instructor/courses" class="hover:text-gray-700">Course Management</a>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                        <span class="text-gray-900">Edit Course</span>
+                    </nav>
+                    <h1 class="text-3xl font-bold text-gray-900">Edit Course</h1>
+                    <p class="mt-2 text-gray-600">Update your course details and content</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    @if (course != null)
+                    {
+                        <!-- Status Badge -->
+                        <span class="@GetStatusBadgeClass(course.Status) px-3 py-1 text-sm font-medium rounded-full">
+                            @course.Status.ToString()
+                        </span>
+                        
+                        <!-- Publish/Unpublish Button -->
+                        @if (course.Status == CourseStatus.Draft)
+                        {
+                            <button @onclick="PublishCourse" 
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Publish Course
+                            </button>
+                        }
+                        else if (course.Status == CourseStatus.Published)
+                        {
+                            <button @onclick="UnpublishCourse" 
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 4h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17.294 15"></path>
+                                </svg>
+                                Unpublish
+                            </button>
+                        }
+                    }
+                    
+                    <button @onclick="NavigateBack" 
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        }
+        else if (courseDto != null)
+        {
+            <!-- Course Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Students</dt>
+                                    <dd class="text-lg font-medium text-gray-900">@course?.EnrollmentCount</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Rating</dt>
+                                    <dd class="text-lg font-medium text-gray-900">@course?.AverageRating.ToString("F1")</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Views</dt>
+                                    <dd class="text-lg font-medium text-gray-900">@course?.ViewCount</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Revenue</dt>
+                                    <dd class="text-lg font-medium text-gray-900">N/A (Free Course)</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Edit Form -->
+            <div class="bg-white shadow rounded-lg">
+                <EditForm Model="courseDto" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="px-6 py-8">
+                        <div class="grid grid-cols-1 gap-6">
+                            
+                            <!-- Basic Information Section -->
+                            <div class="border-b border-gray-200 pb-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                                
+                                <div class="grid grid-cols-1 gap-6">
+                                    <!-- Course Title -->
+                                    <div>
+                                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Course Title <span class="text-red-500">*</span>
+                                        </label>
+                                        <InputText @bind-Value="courseDto.Title" 
+                                                   id="title"
+                                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                   placeholder="Enter course title" />
+                                        <ValidationMessage For="@(() => courseDto.Title)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+
+                                    <!-- Short Description -->
+                                    <div>
+                                        <label for="shortDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Short Description <span class="text-red-500">*</span>
+                                        </label>
+                                        <InputTextArea @bind-Value="courseDto.ShortDescription" 
+                                                       id="shortDescription"
+                                                       rows="3"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       placeholder="Brief description of your course" />
+                                        <ValidationMessage For="@(() => courseDto.ShortDescription)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+
+                                    <!-- Long Description -->
+                                    <div>
+                                        <label for="longDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Detailed Description
+                                        </label>
+                                        <InputTextArea @bind-Value="courseDto.LongDescription" 
+                                                       id="longDescription"
+                                                       rows="6"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       placeholder="Detailed description of what students will learn" />
+                                        <ValidationMessage For="@(() => courseDto.LongDescription)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course Details Section -->
+                            <div class="border-b border-gray-200 pb-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Course Details</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Category -->
+                                    <div>
+                                        <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Category <span class="text-red-500">*</span>
+                                        </label>
+                                        <InputSelect @bind-Value="courseDto.CategoryId" 
+                                                     id="category"
+                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="0">Select a category</option>
+                                            @if (categories != null)
+                                            {
+                                                @foreach (var category in categories)
+                                                {
+                                                    <option value="@category.Id">@category.Name</option>
+                                                }
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => courseDto.CategoryId)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+
+                                    <!-- Course Level -->
+                                    <div>
+                                        <label for="level" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Course Level <span class="text-red-500">*</span>
+                                        </label>
+                                        <InputSelect @bind-Value="courseDto.Level" 
+                                                     id="level"
+                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="@CourseLevel.Beginner">Beginner</option>
+                                            <option value="@CourseLevel.Intermediate">Intermediate</option>
+                                            <option value="@CourseLevel.Advanced">Advanced</option>
+                                            <option value="@CourseLevel.Expert">Expert</option>
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => courseDto.Level)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+
+                                    <!-- Duration -->
+                                    <div>
+                                        <label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Estimated Duration (minutes) <span class="text-red-500">*</span>
+                                        </label>
+                                        <InputNumber @bind-Value="courseDto.EstimatedDurationMinutes" 
+                                                     id="duration"
+                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                     placeholder="e.g., 300 (5 hours)" />
+                                        <ValidationMessage For="@(() => courseDto.EstimatedDurationMinutes)" class="text-red-600 text-sm mt-1" />
+                                        @if (courseDto.EstimatedDurationMinutes > 0)
+                                        {
+                                            <p class="text-sm text-gray-500 mt-1">
+                                                Duration: @courseDto.EstimatedDurationMinutes minutes
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- YouTube Videos Section -->
+                            <div class="border-b border-gray-200 pb-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">YouTube Videos</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- YouTube Video ID -->
+                                    <div>
+                                        <label for="youtubeVideoId" class="block text-sm font-medium text-gray-700 mb-2">
+                                            YouTube Video ID
+                                        </label>
+                                        <div class="relative">
+                                            <InputText @bind-Value="courseDto.YouTubeVideoId"
+                                                       id="youtubeVideoId"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                                       placeholder="e.g., dQw4w9WgXcQ" />
+                                        </div>
+                                        <p class="text-sm text-gray-500 mt-1">Enter the YouTube video ID for the main course content</p>
+                                    </div>
+
+                                    <!-- YouTube Preview Video ID -->
+                                    <div>
+                                        <label for="youtubePreviewVideoId" class="block text-sm font-medium text-gray-700 mb-2">
+                                            YouTube Preview Video ID
+                                        </label>
+                                        <div class="relative">
+                                            <InputText @bind-Value="courseDto.YouTubePreviewVideoId"
+                                                       id="youtubePreviewVideoId"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                                       placeholder="e.g., jNQXAC9IVRw" />
+                                        </div>
+                                        <p class="text-sm text-gray-500 mt-1">Enter the YouTube video ID for course preview (optional)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course Media Section -->
+                            <div class="border-b border-gray-200 pb-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Course Media</h3>
+                                
+                                <div class="grid grid-cols-1 gap-6">
+                                    <!-- Course Image -->
+                                    <div>
+                                        <label for="imageUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Course Image URL
+                                        </label>
+                                        <InputText @bind-Value="courseDto.ImageUrl" 
+                                                   id="imageUrl"
+                                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                   placeholder="https://example.com/course-image.jpg" />
+                                        <ValidationMessage For="@(() => courseDto.ImageUrl)" class="text-red-600 text-sm mt-1" />
+                                        
+                                        @if (!string.IsNullOrEmpty(courseDto.ImageUrl))
+                                        {
+                                            <div class="mt-4">
+                                                <img src="@courseDto.ImageUrl" alt="Course preview" class="h-32 w-48 object-cover rounded-md border" />
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- Preview Video -->
+                                </div>
+                            </div>
+
+                            <!-- Additional Information Section -->
+                            <div class="pb-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                                
+                                <div class="grid grid-cols-1 gap-6">
+                                    <!-- Prerequisites -->
+                                    <div>
+                                        <label for="prerequisites" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Prerequisites
+                                        </label>
+                                        <InputTextArea @bind-Value="courseDto.Prerequisites" 
+                                                       id="prerequisites"
+                                                       rows="3"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       placeholder="What should students know before taking this course?" />
+                                        <ValidationMessage For="@(() => courseDto.Prerequisites)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+
+                                    <!-- What You Will Learn -->
+                                    <div>
+                                        <label for="learningOutcomes" class="block text-sm font-medium text-gray-700 mb-2">
+                                            What You Will Learn
+                                        </label>
+                                        <InputTextArea @bind-Value="courseDto.WhatYouWillLearn" 
+                                                       id="learningOutcomes"
+                                                       rows="4"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       placeholder="List the key learning outcomes and skills students will gain" />
+                                        <ValidationMessage For="@(() => courseDto.WhatYouWillLearn)" class="text-red-600 text-sm mt-1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                        <button type="button" @onclick="NavigateBack"
+                                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Cancel
+                        </button>
+                        
+                        <div class="flex space-x-3">
+                            <button type="submit" 
+                                    disabled="@isSubmitting"
+                                    class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                @if (isSubmitting)
+                                {
+                                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Updating...</span>
+                                }
+                                else
+                                {
+                                    <span>Update Course</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-12">
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Course not found</h3>
+                <p class="mt-1 text-sm text-gray-500">The course you're looking for doesn't exist or you don't have permission to edit it.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    
+    private Course? course;
+    private CourseUpdateDto? courseDto;
+    private List<Category>? categories;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourse();
+        categories = StaticDataService.GetCategories().ToList();
+    }
+
+    private async Task LoadCourse()
+    {
+        try
+        {
+            isLoading = true;
+            course = await CourseService.GetCourseByIdAsync(CourseId);
+            
+            if (course != null)
+            {
+                // Convert course to DTO for editing
+                courseDto = new CourseUpdateDto
+                {
+                    Id = course.Id,
+                    Title = course.Title,
+                    ShortDescription = course.ShortDescription,
+                    LongDescription = course.LongDescription,
+                    ImageUrl = course.ImageUrl,
+                    YouTubeVideoId = course.YouTubeVideoId,
+                    YouTubePreviewVideoId = course.YouTubePreviewVideoId,
+                    Level = course.Level,
+                    CategoryId = course.CategoryId ?? 0,
+                    Prerequisites = course.Prerequisites,
+                    WhatYouWillLearn = course.WhatYouWillLearn,
+                    EstimatedDurationMinutes = course.EstimatedDurationMinutes
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading course:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isSubmitting || courseDto == null || course == null) return;
+
+        try
+        {
+            isSubmitting = true;
+
+            // Update course entity
+            course.Title = courseDto.Title;
+            course.ShortDescription = courseDto.ShortDescription;
+            course.LongDescription = courseDto.LongDescription ?? string.Empty;
+            course.ImageUrl = courseDto.ImageUrl;
+            course.YouTubeVideoId = courseDto.YouTubeVideoId;
+            course.YouTubePreviewVideoId = courseDto.YouTubePreviewVideoId;
+            course.Level = courseDto.Level;
+            course.CategoryId = courseDto.CategoryId == 0 ? null : courseDto.CategoryId;
+            course.Prerequisites = courseDto.Prerequisites;
+            course.WhatYouWillLearn = courseDto.WhatYouWillLearn;
+            course.EstimatedDurationMinutes = courseDto.EstimatedDurationMinutes;
+
+            // Save course
+            await CourseService.UpdateCourseAsync(course!);
+
+            await JS.InvokeVoidAsync("alert", "Course updated successfully!");
+            Navigation.NavigateTo("/instructor/courses");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error updating course: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task PublishCourse()
+    {
+        if (course == null) return;
+
+        try
+        {
+            var success = await CourseService.PublishCourseAsync(course.Id);
+            if (success)
+            {
+                await LoadCourse();
+                await JS.InvokeVoidAsync("alert", "Course published successfully!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Failed to publish course.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error publishing course: {ex.Message}");
+        }
+    }
+
+    private async Task UnpublishCourse()
+    {
+        if (course == null) return;
+
+        try
+        {
+            var success = await CourseService.UnpublishCourseAsync(course.Id);
+            if (success)
+            {
+                await LoadCourse();
+                await JS.InvokeVoidAsync("alert", "Course unpublished successfully!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Failed to unpublish course.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error unpublishing course: {ex.Message}");
+        }
+    }
+
+    private string GetStatusBadgeClass(CourseStatus status)
+    {
+        return status switch
+        {
+            CourseStatus.Published => "bg-green-100 text-green-800",
+            CourseStatus.Draft => "bg-yellow-100 text-yellow-800",
+            CourseStatus.Archived => "bg-gray-100 text-gray-800",
+            CourseStatus.Suspended => "bg-red-100 text-red-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/instructor/courses");
+    }
+} 

@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearningApp", "ELearningAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearningApp.Client", "ELearningApp\ELearningApp.Client\ELearningApp.Client.csproj", "{FA51EF40-EFEA-40BC-B924-EB2EBB05632F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearningApp.Wasm", "ELearningApp.Wasm\ELearningApp.Wasm.csproj", "{B8C5E123-4567-890A-BCDE-F1234567890A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearningApp.Api", "ELearningApp.Api\ELearningApp.Api.csproj", "{C9D6F234-5678-901B-CDEF-012345678901}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{FA51EF40-EFEA-40BC-B924-EB2EBB05632F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA51EF40-EFEA-40BC-B924-EB2EBB05632F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA51EF40-EFEA-40BC-B924-EB2EBB05632F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8C5E123-4567-890A-BCDE-F1234567890A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8C5E123-4567-890A-BCDE-F1234567890A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8C5E123-4567-890A-BCDE-F1234567890A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8C5E123-4567-890A-BCDE-F1234567890A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9D6F234-5678-901B-CDEF-012345678901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9D6F234-5678-901B-CDEF-012345678901}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9D6F234-5678-901B-CDEF-012345678901}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9D6F234-5678-901B-CDEF-012345678901}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

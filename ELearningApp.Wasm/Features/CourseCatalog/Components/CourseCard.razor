@@ -1,0 +1,234 @@
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.Enums
+@inject NavigationManager Navigation
+
+@if (Course != null)
+{
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        
+        <!-- Course Image -->
+        <div class="relative h-48 bg-gray-200 cursor-pointer" @onclick="OnImageClick">
+            @if (!string.IsNullOrEmpty(Course.ImageUrl))
+            {
+                <img src="@Course.ImageUrl" alt="@GetSafeTitle()" class="w-full h-full object-cover" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            }
+            
+            <div class="w-full h-full flex items-center justify-center bg-gradient-to-r from-primary-400 to-primary-600 @(string.IsNullOrEmpty(Course.ImageUrl) ? "" : "hidden")">
+                <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+            </div>
+            
+            <!-- Course Level Badge -->
+            <div class="absolute top-3 left-3">
+                <span class="@GetLevelBadgeClasses() px-2 py-1 rounded-full text-xs font-medium">
+                    @GetSafeLevel()
+                </span>
+            </div>
+        </div>
+
+        <!-- Course Content -->
+        <div class="p-6">
+            <!-- Course Title - Clickable -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-primary-600 transition-colors" 
+                @onclick="OnTitleClick">
+                @GetSafeTitle()
+            </h3>
+            
+            <!-- Course Description -->
+            <p class="text-sm text-gray-600 mb-4 line-clamp-3">@GetSafeDescription()</p>
+            
+            <!-- Instructor - Now with Profile Image -->
+            <div class="flex items-center mb-4">
+                <div class="w-8 h-8 rounded-full mr-3 flex-shrink-0 overflow-hidden bg-gray-300">
+                    @if (!string.IsNullOrEmpty(Course.Instructor?.ProfileImageUrl))
+                    {
+                        <img src="@Course.Instructor.ProfileImageUrl" alt="@GetSafeInstructorName()" class="w-full h-full object-cover">
+                    }
+                    else
+                    {
+                        <div class="w-full h-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    }
+                </div>
+                <button @onclick="OnInstructorClick"
+                        @onclick:stopPropagation="true"
+                        class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                    @GetSafeInstructorName()
+                </button>
+            </div>
+
+            <!-- Rating and Students (vertical layout) -->
+            <div class="mb-4">
+                <!-- Rating -->
+                <div class="flex items-center space-x-1 mb-1">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <svg class="w-4 h-4 @(i <= GetSafeRating() ? "text-yellow-400" : "text-gray-300")" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    }
+                    <span class="text-sm text-gray-600 ml-2">(@GetSafeReviewCount())</span>
+                </div>
+                
+                <!-- Students Count (below rating) -->
+                <div class="text-sm text-gray-500">@GetSafeEnrollmentCount() students</div>
+            </div>
+
+            <!-- Duration and Category -->
+            <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
+                <span class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    @GetSafeDuration()
+                </span>
+                <span class="text-primary-600 font-medium">@GetSafeCategoryName()</span>
+            </div>
+
+            <!-- Price and Action -->
+            <div class="flex items-center justify-between">
+                <div class="text-left">
+                    <span class="text-2xl font-bold text-green-600">Free</span>
+                </div>
+                <button @onclick="OnViewDetailsClick"
+                        @onclick:stopPropagation="true"
+                        class="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    View Details
+                </button>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="text-red-800 font-medium">Course data is null</div>
+    </div>
+}
+
+@code {
+    [Parameter] public Course Course { get; set; } = null!;
+    [Parameter] public EventCallback<Course> OnCourseSelected { get; set; }
+
+    private void OnViewDetailsClick()
+    {
+        NavigateToCourse("View Details Button");
+    }
+
+    private void OnImageClick()
+    {
+        NavigateToCourse("Course Image");
+    }
+
+    private void OnTitleClick()
+    {
+        NavigateToCourse("Course Title");
+    }
+
+    private void OnInstructorClick()
+    {
+        try
+        {
+            Console.WriteLine($"?? CourseCard: Instructor clicked for course {Course?.Id}");
+            
+            if (!string.IsNullOrEmpty(Course?.InstructorId))
+            {
+                Navigation.NavigateTo($"/instructor/{Course.InstructorId}");
+            }
+            else
+            {
+                Console.WriteLine($"?? CourseCard: Invalid instructor ID: {Course?.InstructorId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"?? CourseCard: Error in instructor navigation: {ex.Message}");
+        }
+    }
+
+    private void NavigateToCourse(string source)
+    {
+        try
+        {
+            Console.WriteLine($"?? CourseCard: {source} clicked for course {Course?.Id}");
+            
+            if (Course?.Id > 0)
+            {
+                // Use direct navigation to avoid the home page "blink"
+                Navigation.NavigateTo($"/course/{Course.Id}");
+            }
+            else
+            {
+                Console.WriteLine($"?? CourseCard: Invalid course ID: {Course?.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"?? CourseCard: Error in {source} navigation: {ex.Message}");
+            Console.WriteLine($"?? CourseCard: Stack: {ex.StackTrace}");
+        }
+    }
+
+    private string GetLevelBadgeClasses()
+    {
+        if (Course == null) return "bg-gray-100 text-gray-800";
+        
+        return Course.Level switch
+        {
+            CourseLevel.Beginner => "bg-green-100 text-green-800",
+            CourseLevel.Intermediate => "bg-blue-100 text-blue-800",
+            CourseLevel.Advanced => "bg-orange-100 text-orange-800",
+            CourseLevel.Expert => "bg-red-100 text-red-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    private string GetSafeTitle() => Course?.Title ?? "Course Title Error";
+    private string GetSafeDescription() => Course?.ShortDescription ?? "Course description not available";
+    private string GetSafeLevel() => Course?.Level.ToString() ?? "Unknown";
+    private double GetSafeRating() => Course?.AverageRating ?? 0;
+    private int GetSafeReviewCount() => Course?.ReviewCount ?? 0;
+    private int GetSafeEnrollmentCount() => Course?.EnrollmentCount ?? 0;
+    private string GetSafeCategoryName() => Course?.Category?.Name ?? "Uncategorized";
+
+    private string GetSafeInstructorName()
+    {
+        try
+        {
+            if (Course?.Instructor != null)
+            {
+                var firstName = Course.Instructor.FirstName ?? "Unknown";
+                var lastName = Course.Instructor.LastName ?? "Instructor";
+                return $"{firstName} {lastName}".Trim();
+            }
+            return "Instructor not available";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"?? CourseCard: Error getting instructor name: {ex.Message}");
+            return "Instructor Error";
+        }
+    }
+
+    private string GetSafeDuration()
+    {
+        try
+        {
+            if (Course != null && Course.EstimatedDurationMinutes > 0)
+            {
+                return $"{Course.EstimatedDurationMinutes / 60}h {Course.EstimatedDurationMinutes % 60}m";
+            }
+            return "Duration not specified";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"?? CourseCard: Error getting duration: {ex.Message}");
+            return "Duration Error";
+        }
+    }
+}

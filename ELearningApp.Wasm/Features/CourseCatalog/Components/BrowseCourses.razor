@@ -1,0 +1,449 @@
+@page "/catalog"
+@page "/courses"
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
+@using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@using Microsoft.AspNetCore.WebUtilities
+@inject ICourseService CourseService
+@inject StaticDataService StaticDataService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Course Catalog - E-Learning Platform</PageTitle>
+
+<div class="min-h-screen bg-gray-50">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">Discover Your Next Course</h1>
+                <p class="text-xl text-primary-100 mb-8">Learn from industry experts and advance your skills with our comprehensive course catalog</p>
+                
+                <!-- Search Bar -->
+                <div class="max-w-2xl mx-auto">
+                    <div class="relative">
+                        <input @bind="searchTerm" 
+                               @bind:event="oninput"
+                               @onkeypress="OnSearchKeyPress"
+                               type="text" 
+                               placeholder="Search for courses, instructors..." 
+                               class="w-full px-8 py-3 pl-12 pr-16 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            @if (isSearching)
+                            {
+                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+                            }
+                            else
+                            {
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            }
+                        </div>
+                        <button @onclick="SearchCourses"
+                                disabled="@isSearching"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <span class="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white px-4 py-1 rounded-md text-sm font-medium transition-colors">
+                                @if (isSearching)
+                                {
+                                    <span>Searching...</span>
+                                }
+                                else
+                                {
+                                    <span>Search</span>
+                                }
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow p-6 sticky top-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Courses</h3>
+                    
+                    <!-- Category Filter -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <select @onchange="OnCategoryChanged" value="@selectedCategoryId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Categories</option>
+                            @foreach (var category in categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Level Filter -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Level</label>
+                        <select @onchange="OnLevelChanged" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Levels</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                        <select @onchange="OnRatingChanged" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Ratings</option>
+                            <option value="4">4 Stars & Above</option>
+                            <option value="3">3 Stars & Above</option>
+                            <option value="2">2 Stars & Above</option>
+                        </select>
+                    </div>
+
+                    <!-- Clear Filters -->
+                    <button @onclick="ClearFilters"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        Clear All Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Course Grid -->
+            <div class="lg:col-span-3">
+                <!-- Results Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <span>Search Results for "@searchTerm"</span>
+                            }
+                            else
+                            {
+                                <span>All Courses</span>
+                            }
+                        </h2>
+                        <p class="text-gray-600">
+                            @if (isLoading || isSearching)
+                            {
+                                <span>Loading...</span>
+                            }
+                            else
+                            {
+                                <span>@filteredCourses.Count() courses found</span>
+                            }
+                        </p>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-gray-600">Sort by:</label>
+                        <select @bind="sortBy"
+                                disabled="@(isLoading || isSearching)"
+                                class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100">
+                            <option value="newest">Newest</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="rating">Highest Rated</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (isLoading || isSearching)
+                {
+                    <div class="flex justify-center items-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                    </div>
+                }
+                else if (filteredCourses.Any())
+                {
+                    <!-- Course Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        @foreach (var course in filteredCourses)
+                        {
+                            <CourseCard Course="course" OnCourseSelected="ViewCourseDetails" />
+                        }
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="mt-12 flex justify-center">
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button @onclick="() => ChangePage(currentPage - 1)"
+                                    disabled="@(currentPage <= 1)"
+                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Previous
+                            </button>
+                            
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                var page = i;
+                                <button @onclick="() => ChangePage(page)"
+                                        class="@GetPageButtonClasses(page) relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    @(page)
+                                </button>
+                            }
+                            
+                            <button @onclick="() => ChangePage(currentPage + 1)"
+                                    disabled="@(currentPage >= totalPages)"
+                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Next
+                            </button>
+                        </nav>
+                    </div>
+                }
+                else
+                {
+                    <!-- No Results -->
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No courses found</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <span>No courses found for "@searchTerm". Try adjusting your search criteria or filters.</span>
+                            }
+                            else
+                            {
+                                <span>Try adjusting your search criteria or filters.</span>
+                            }
+                        </p>
+                        <div class="mt-6">
+                            <button @onclick="ClearFilters"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Course> allCourses = new();
+    private IEnumerable<Course> filteredCourses = new List<Course>();
+    private List<Category> categories = new();
+    private bool isLoading = true;
+    private bool isSearching = false;
+
+    // Filter parameters
+    private string searchTerm = string.Empty;
+    private string selectedCategoryId = string.Empty;
+    private string selectedLevel = string.Empty;
+    private string minRating = string.Empty;
+    private string _sortBy = "newest";
+    private string sortBy 
+    { 
+        get => _sortBy; 
+        set 
+        { 
+            _sortBy = value; 
+            _ = SortCourses(); 
+        } 
+    }
+
+    // Pagination
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private int totalPages = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Parse URL parameters for search term
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        if (query.TryGetValue("search", out var searchParam))
+        {
+            searchTerm = searchParam.FirstOrDefault() ?? string.Empty;
+        }
+        
+        if (query.TryGetValue("category", out var categoryParam))
+        {
+            selectedCategoryId = categoryParam.FirstOrDefault() ?? string.Empty;
+        }
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            allCourses = (await CourseService.GetPublishedCoursesAsync()).ToList();
+            categories = StaticDataService.GetCategories().ToList();
+            await FilterCourses();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading courses:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            await SearchCourses();
+        }
+    }
+
+    private async Task SearchCourses()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            await FilterCourses();
+            return;
+        }
+
+        try
+        {
+            isSearching = true;
+            StateHasChanged();
+            
+            currentPage = 1;
+            await FilterCourses();
+        }
+        finally
+        {
+            isSearching = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task FilterCourses()
+    {
+        await Task.Run(() =>
+        {
+            var query = allCourses.AsQueryable();
+
+            // Enhanced search filter - includes instructor names and long description
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var searchTermLower = searchTerm.ToLowerInvariant();
+                query = query.Where(c => 
+                    c.Title.ToLower().Contains(searchTermLower) ||
+                    c.ShortDescription.ToLower().Contains(searchTermLower) ||
+                    (c.LongDescription != null && c.LongDescription.ToLower().Contains(searchTermLower)) ||
+                    (c.Instructor != null && (
+                        (c.Instructor.FirstName != null && c.Instructor.FirstName.ToLower().Contains(searchTermLower)) ||
+                        (c.Instructor.LastName != null && c.Instructor.LastName.ToLower().Contains(searchTermLower)) ||
+                        $"{c.Instructor.FirstName} {c.Instructor.LastName}".ToLower().Contains(searchTermLower)
+                    ))
+                );
+            }
+
+            // Category filter
+            if (!string.IsNullOrEmpty(selectedCategoryId) && int.TryParse(selectedCategoryId, out int categoryId))
+            {
+                query = query.Where(c => c.CategoryId == categoryId);
+            }
+
+            // Level filter
+            if (!string.IsNullOrEmpty(selectedLevel) && Enum.TryParse<CourseLevel>(selectedLevel, out var level))
+            {
+                query = query.Where(c => c.Level == level);
+            }
+
+            // Rating filter
+            if (!string.IsNullOrEmpty(minRating) && double.TryParse(minRating, out var rating))
+            {
+                query = query.Where(c => c.AverageRating >= rating);
+            }
+
+            // Apply sorting
+            query = sortBy switch
+            {
+                "popular" => query.OrderByDescending(c => c.EnrollmentCount),
+                "rating" => query.OrderByDescending(c => c.AverageRating).ThenByDescending(c => c.ReviewCount),
+                _ => query.OrderByDescending(c => c.CreatedAt)
+            };
+
+            var totalCourses = query.Count();
+            totalPages = (int)Math.Ceiling((double)totalCourses / pageSize);
+
+            filteredCourses = query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        });
+
+        StateHasChanged();
+    }
+
+    private async Task SortCourses()
+    {
+        await FilterCourses();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedCategoryId = string.Empty;
+        selectedLevel = string.Empty;
+        minRating = string.Empty;
+        currentPage = 1;
+        
+        // Update URL to remove search parameters
+        Navigation.NavigateTo("/courses", false);
+        
+        await FilterCourses();
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+            await FilterCourses();
+        }
+    }
+
+    private string GetPageButtonClasses(int page)
+    {
+        return page == currentPage
+            ? "bg-primary-50 border-primary-500 text-primary-600"
+            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50";
+    }
+
+    private void ViewCourseDetails(Course course)
+    {
+        Navigation.NavigateTo($"/course/{course.Id}");
+    }
+
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        selectedCategoryId = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1; // Reset to first page when category changes
+        await FilterCourses();
+    }
+
+    private async Task OnLevelChanged(ChangeEventArgs e)
+    {
+        selectedLevel = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1; // Reset to first page when level changes
+        await FilterCourses();
+    }
+
+    private async Task OnRatingChanged(ChangeEventArgs e)
+    {
+        minRating = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1; // Reset to first page when rating changes
+        await FilterCourses();
+    }
+}

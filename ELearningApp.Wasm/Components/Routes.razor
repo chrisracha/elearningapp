@@ -1,0 +1,36 @@
+﻿<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@* Additional route configuration for new features *@
+@* Routes are now defined directly in components using @page directive:
+
+Home & Public:
+- "/" - Home page (Features/Shared/Home.razor)
+
+Authentication:
+- "/Account/Register" - User registration
+- "/Account/Login" - User login  
+- "/Account/ForgotPassword" - Password reset
+
+Course Management (Instructors):
+- "/instructor/courses" - Course management dashboard
+- "/instructor/courses/create" - Create new course
+- "/instructor/courses/{id}/edit" - Edit existing course
+- "/instructor/courses/{id}/upload" - Upload course content
+
+Course Discovery (Public):
+- "/catalog" - Browse all courses
+- "/courses" - Alternative course catalog URL
+- "/course/{id}" - View course details (unenrolled view)
+- "/instructor/{id}" - View instructor profile and courses
+
+Course Learning (Students):
+- "/course/{id}/learn" - Enrolled course learning interface
+- "/dashboard" - Student learning dashboard
+- "/my-learning" - Alternative dashboard URL
+
+*@

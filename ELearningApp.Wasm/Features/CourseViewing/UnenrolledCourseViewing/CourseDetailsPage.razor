@@ -1,0 +1,450 @@
+@page "/course/{courseId:int}"
+@using ELearningApp.Models.Entities
+@using ELearningApp.Models.DTOs
+@using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@using ELearningApp.Features.CourseViewing.Shared
+@inject ICourseService CourseService
+@inject IUserService UserService
+@inject StaticDataService StaticDataService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>@(course?.Title ?? "Loading...") - E-Learning Platform</PageTitle>
+
+<div class="min-h-screen bg-white">
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center min-h-screen">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+    }
+    else if (course != null)
+    {
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Main Content -->
+                <div class="lg:col-span-2">
+                    <!-- Course Header -->
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-4">@course.Title</h1>
+                        <p class="text-lg text-gray-600 mb-4">@course.ShortDescription</p>
+                        
+                        <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                            <span>by 
+                                <button @onclick="() => ViewInstructor(course.InstructorId)"
+                                        class="font-medium text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                    @course.Instructor.FirstName @course.Instructor.LastName
+                                </button>
+                            </span>
+                            <span class="flex items-center">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <svg class="w-4 h-4 @(i <= course.AverageRating ? "text-yellow-400" : "text-gray-300")" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                }
+                                <span class="ml-2">(@course.ReviewCount ratings) @course.EnrollmentCount students</span>
+                            </span>
+                            <span>@course.Category?.Name</span>
+                        </div>
+                        
+                        <div class="text-sm text-gray-500">
+                            <span>English</span>
+                        </div>
+                    </div>
+
+                    <!-- Video Preview -->
+                    <div class="mb-6">
+                        <div class="bg-gray-900 rounded-lg aspect-video flex items-center justify-center relative overflow-hidden">
+                            <VideoPreview YouTubeVideoId="@(course.YouTubePreviewVideoId ?? course.YouTubeVideoId)" CourseTitle="@course.Title" />
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="border-b border-gray-200 mb-6">
+                        <nav class="flex space-x-8" aria-label="Tabs">
+                            <button @onclick="() => SetActiveTab(CourseTab.Overview)"
+                                    class="@GetTabClasses(CourseTab.Overview) py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+                                Overview
+                            </button>
+                            <button @onclick="() => SetActiveTab(CourseTab.Ratings)"
+                                    class="@GetTabClasses(CourseTab.Ratings) py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+                                Student Feedback
+                            </button>
+                            <button @onclick="() => SetActiveTab(CourseTab.Contents)"
+                                    class="@GetTabClasses(CourseTab.Contents) py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap">
+                                Course Contents
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="mb-8">
+                        @if (activeTab == CourseTab.Overview)
+                        {
+                            <CourseOverviewTab Course="course" />
+                        }
+                        else if (activeTab == CourseTab.Ratings)
+                        {
+                            <CourseRatingsTab CourseId="course.Id" AverageRating="course.AverageRating" TotalRatings="course.ReviewCount" />
+                        }
+                        else if (activeTab == CourseTab.Contents)
+                        {
+                            <CourseContentsPreviewTab Course="course" />
+                        }
+                    </div>
+
+                    <!-- Course Recommendations -->
+                    @if (relatedCourses.Any())
+                    {
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from @course.Category?.Name</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                @foreach (var relatedCourse in relatedCourses.Take(3))
+                                {
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                                         @onclick="() => NavigateToCourse(relatedCourse.Id)"
+                                         @onclick:preventDefault="true">
+                                        <div class="h-32 bg-gray-200 flex items-center justify-center">
+                                            @if (!string.IsNullOrEmpty(relatedCourse.ImageUrl))
+                                            {
+                                                <img src="@relatedCourse.ImageUrl" alt="@relatedCourse.Title" class="w-full h-full object-cover">
+                                            }
+                                            else
+                                            {
+                                                <div class="text-gray-400">Course Image</div>
+                                            }
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="font-semibold text-gray-900 mb-2">@relatedCourse.Title</h4>
+                                            <div class="flex items-center mb-2" >
+                                                <div class="w-8 h-8 rounded-full overflow-hidden mr-2 flex-shrink-0">
+                                                    @if (!string.IsNullOrEmpty(relatedCourse.Instructor?.ProfileImageUrl))
+                                                    {
+                                                        <img src="@relatedCourse.Instructor.ProfileImageUrl" alt="" class="w-full h-full object-cover">
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="w-full h-full flex items-center justify-center">
+                                                            <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <button @onclick="() => ViewInstructor(relatedCourse.InstructorId)"
+                                                        @onclick:stopPropagation="true"
+                                                        class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                                    @relatedCourse.Instructor.FirstName @relatedCourse.Instructor.LastName
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-3">@relatedCourse.ShortDescription</p>
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-bold text-green-600">Free</span>
+                                                <span class="text-xs text-gray-500">
+                                                    @(relatedCourse.EstimatedDurationMinutes / 60)h @(relatedCourse.EstimatedDurationMinutes % 60)m
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Instructor Courses -->
+                    @if (instructorCourses.Any())
+                    {
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">
+                                Get more from 
+                                <button @onclick="() => ViewInstructor(course.InstructorId)"
+                                        class="text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                    @course.Instructor.FirstName @course.Instructor.LastName
+                                </button>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                @foreach (var instructorCourse in instructorCourses.Take(3))
+                                {
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                                         @onclick="() => NavigateToCourse(instructorCourse.Id)"
+                                         @onclick:preventDefault="true">
+                                        <div class="h-32 bg-gray-200 flex items-center justify-center">
+                                            @if (!string.IsNullOrEmpty(instructorCourse.ImageUrl))
+                                            {
+                                                <img src="@instructorCourse.ImageUrl" alt="@instructorCourse.Title" class="w-full h-full object-cover">
+                                            }
+                                            else
+                                            {
+                                                <div class="text-gray-400">Course Image</div>
+                                            }
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="font-semibold text-gray-900 mb-2">@instructorCourse.Title</h4>
+                                            <div class="flex items-center mb-2">
+                                                <div class="w-8 h-8 rounded-full mr-2 overflow-hidden bg-gray-300 flex-shrink-0">
+                                                    @if (!string.IsNullOrEmpty(instructorCourse.Instructor?.ProfileImageUrl))
+                                                    {
+                                                        <img src="@instructorCourse.Instructor.ProfileImageUrl" alt="@instructorCourse.Instructor.FirstName @instructorCourse.Instructor.LastName" class="w-full h-full object-cover">
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="w-full h-full flex items-center justify-center">
+                                                            <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <button @onclick="() => ViewInstructor(instructorCourse.InstructorId)"
+                                                        @onclick:stopPropagation="true"
+                                                        class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                                    @instructorCourse.Instructor.FirstName @instructorCourse.Instructor.LastName
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-3">@instructorCourse.ShortDescription</p>
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-bold text-green-600">Free</span>
+                                                <span class="text-xs text-gray-500">
+                                                    @(instructorCourse.EstimatedDurationMinutes / 60)h @(instructorCourse.EstimatedDurationMinutes % 60)m
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <!-- Enrollment Card -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 sticky top-6">
+                        <div class="text-center mb-6">
+                            <div class="text-3xl font-bold text-gray-900 mb-2">
+                                <span class="text-green-600">Free</span>
+                            </div>
+                        </div>
+
+                        @if (isEnrolled)
+                        {
+                            <button @onclick="@(() => Navigation.NavigateTo($"/course/{course.Id}/learn"))"
+                                    class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors mb-4">
+                                Continue Learning
+                            </button>
+                        }
+                        else
+                        {
+                            <button @onclick="EnrollInCourse"
+                                    class="w-full py-3 px-4 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors mb-4"
+                                    disabled="@isEnrolling">
+                                @if (isEnrolling)
+                                {
+                                    <span>Enrolling...</span>
+                                }
+                                else
+                                {
+                                    <span>Enroll Now</span>
+                                }
+                            </button>
+                        }
+
+                        <div class="text-sm text-gray-600 space-y-2">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                @(course.EstimatedDurationMinutes / 60)h @(course.EstimatedDurationMinutes % 60)m total
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                                Available on iOS and Android
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Certificate of completion
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="max-w-4xl mx-auto p-6">
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <h2 class="text-xl font-semibold text-gray-900 mb-2">Course Not Found</h2>
+                <p class="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
+                <a href="/catalog" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    Browse Courses
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+
+    private Course? course;
+    private List<Course> relatedCourses = new();
+    private List<Course> instructorCourses = new();
+    private bool isLoading = true;
+    private bool isEnrolled = false;
+    private bool isEnrolling = false;
+    private CourseTab activeTab = CourseTab.Overview;
+
+    private enum CourseTab
+    {
+        Overview,
+        Ratings,
+        Contents
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourseData();
+    }
+
+    private async Task LoadCourseData()
+    {
+        try
+        {
+            isLoading = true;
+            course = await CourseService.GetCourseWithDetailsAsync(CourseId);
+            
+            if (course != null)
+            {
+                // Check if user is enrolled
+                var currentUser = await UserService.GetCurrentUserAsync();
+                if (currentUser != null)
+                {
+                    isEnrolled = await CourseService.IsStudentEnrolledAsync(CourseId, currentUser.Id);
+                }
+
+                // Load related courses and instructor courses
+                await LoadRelatedCourses();
+                await LoadInstructorCourses();
+
+                // Increment view count
+                await CourseService.IncrementCourseViewAsync(CourseId);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", "Error loading course:", ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadRelatedCourses()
+    {
+        if (course?.CategoryId != null)
+        {
+            var allRelated = await CourseService.GetCoursesByCategoryAsync(course.CategoryId.Value);
+            relatedCourses = allRelated.Where(c => c.Id != course.Id).Take(6).ToList();
+        }
+    }
+
+    private async Task LoadInstructorCourses()
+    {
+        if (course?.InstructorId != null)
+        {
+            var allInstructorCourses = await CourseService.GetCoursesByInstructorAsync(course.InstructorId);
+            instructorCourses = allInstructorCourses.Where(c => c.Id != course.Id).Take(6).ToList();
+        }
+    }
+
+    private void SetActiveTab(CourseTab tab)
+    {
+        activeTab = tab;
+        StateHasChanged();
+    }
+
+    private string GetTabClasses(CourseTab tab)
+    {
+        return activeTab == tab 
+            ? "border-primary-500 text-primary-600" 
+            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300";
+    }
+
+    private void ViewInstructor(string instructorId)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(instructorId))
+            {
+                Navigation.NavigateTo($"/instructor/{instructorId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Instructor navigation error: {ex.Message}");
+        }
+    }
+
+    private async Task EnrollInCourse()
+    {
+        if (isEnrolling || course == null) return;
+
+        try
+        {
+            isEnrolling = true;
+            var currentUser = await UserService.GetCurrentUserAsync();
+            
+            if (currentUser == null)
+            {
+                Navigation.NavigateTo("/Account/Login");
+                return;
+            }
+
+            var success = await CourseService.EnrollStudentAsync(CourseId, currentUser.Id);
+            
+            if (success)
+            {
+                isEnrolled = true;
+                await JS.InvokeVoidAsync("alert", "Successfully enrolled! You can now access the course content.");
+                Navigation.NavigateTo($"/course/{CourseId}/learn");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Failed to enroll in course. Please try again.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error enrolling in course: {ex.Message}");
+        }
+        finally
+        {
+            isEnrolling = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToCourse(int courseId)
+    {
+        try
+        {
+            Navigation.NavigateTo($"/course/{courseId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Navigation error: {ex.Message}");
+        }
+    }
+}
