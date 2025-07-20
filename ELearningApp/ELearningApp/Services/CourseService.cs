@@ -392,13 +392,20 @@ namespace ELearningApp.Services
                 if (string.IsNullOrWhiteSpace(searchTerm))
                     return await GetPublishedCoursesAsync();
 
+                var searchTermLower = searchTerm.ToLowerInvariant();
+
                 return await _context.Courses
                     .Include(c => c.Instructor)
                     .Include(c => c.Category)
                     .Where(c => c.Status == CourseStatus.Published &&
-                               (c.Title.Contains(searchTerm) || 
-                                c.ShortDescription.Contains(searchTerm) ||
-                                c.LongDescription.Contains(searchTerm)))
+                               (c.Title.ToLower().Contains(searchTermLower) || 
+                                c.ShortDescription.ToLower().Contains(searchTermLower) ||
+                                (c.LongDescription != null && c.LongDescription.ToLower().Contains(searchTermLower)) ||
+                                (c.Instructor != null && (
+                                    (c.Instructor.FirstName != null && c.Instructor.FirstName.ToLower().Contains(searchTermLower)) ||
+                                    (c.Instructor.LastName != null && c.Instructor.LastName.ToLower().Contains(searchTermLower)) ||
+                                    (c.Instructor.FirstName + " " + c.Instructor.LastName).ToLower().Contains(searchTermLower)
+                                ))))
                     .OrderByDescending(c => c.CreatedAt)
                     .ToListAsync();
             }
