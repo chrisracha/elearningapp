@@ -9,6 +9,7 @@
 @inject StaticDataService StaticDataService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@rendermode InteractiveServer
 
 <PageTitle>@(course?.Title ?? "Loading...") - E-Learning Platform</PageTitle>
 
@@ -95,11 +96,13 @@
                     @if (relatedCourses.Any())
                     {
                         <div class="mb-8">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from &lt;&lt;@course.Category?.Name&gt;&gt;</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from @course.Category?.Name</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 @foreach (var relatedCourse in relatedCourses.Take(3))
                                 {
-                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                                         @onclick="() => NavigateToCourse(relatedCourse.Id)"
+                                         @onclick:preventDefault="true">
                                         <div class="h-32 bg-gray-200 flex items-center justify-center">
                                             @if (!string.IsNullOrEmpty(relatedCourse.ImageUrl))
                                             {
@@ -113,12 +116,12 @@
                                         <div class="p-4">
                                             <h4 class="font-semibold text-gray-900 mb-2">@relatedCourse.Title</h4>
                                             <p class="text-sm text-gray-600 mb-2">@relatedCourse.Instructor.FirstName @relatedCourse.Instructor.LastName</p>
-                                            <p class="text-xs text-gray-500 mb-3">This is an example of a paragraph of text that has basic HTML formatting applied.</p>
+                                            <p class="text-xs text-gray-500 mb-3">@relatedCourse.ShortDescription</p>
                                             <div class="flex items-center justify-between">
                                                 <span class="font-bold text-green-600">Free</span>
-                                                <button class="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                                    Enroll
-                                                </button>
+                                                <span class="text-xs text-gray-500">
+                                                    @(relatedCourse.EstimatedDurationMinutes / 60)h @(relatedCourse.EstimatedDurationMinutes % 60)m
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -131,11 +134,13 @@
                     @if (instructorCourses.Any())
                     {
                         <div class="mb-8">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from &lt;&lt;@course.Instructor.FirstName @course.Instructor.LastName&gt;&gt;</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from @course.Instructor.FirstName @course.Instructor.LastName</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 @foreach (var instructorCourse in instructorCourses.Take(3))
                                 {
-                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                                         @onclick="() => NavigateToCourse(instructorCourse.Id)"
+                                         @onclick:preventDefault="true">
                                         <div class="h-32 bg-gray-200 flex items-center justify-center">
                                             @if (!string.IsNullOrEmpty(instructorCourse.ImageUrl))
                                             {
@@ -149,12 +154,12 @@
                                         <div class="p-4">
                                             <h4 class="font-semibold text-gray-900 mb-2">@instructorCourse.Title</h4>
                                             <p class="text-sm text-gray-600 mb-2">@instructorCourse.Instructor.FirstName @instructorCourse.Instructor.LastName</p>
-                                            <p class="text-xs text-gray-500 mb-3">This is an example of a paragraph of text that has basic HTML formatting applied.</p>
+                                            <p class="text-xs text-gray-500 mb-3">@instructorCourse.ShortDescription</p>
                                             <div class="flex items-center justify-between">
                                                 <span class="font-bold text-green-600">Free</span>
-                                                <button class="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                                    Enroll
-                                                </button>
+                                                <span class="text-xs text-gray-500">
+                                                    @(instructorCourse.EstimatedDurationMinutes / 60)h @(instructorCourse.EstimatedDurationMinutes % 60)m
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -364,4 +369,16 @@
             StateHasChanged();
         }
     }
-} 
+
+    private void NavigateToCourse(int courseId)
+    {
+        try
+        {
+            Navigation.NavigateTo($"/course/{courseId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Navigation error: {ex.Message}");
+        }
+    }
+}

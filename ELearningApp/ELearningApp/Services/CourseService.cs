@@ -99,6 +99,7 @@ namespace ELearningApp.Services
             {
                 return await _context.Courses
                     .Include(c => c.Category)
+                    .Include(c => c.Instructor)
                     .Where(c => c.InstructorId == instructorId)
                     .OrderByDescending(c => c.CreatedAt)
                     .ToListAsync();
@@ -963,4 +964,4 @@ namespace ELearningApp.Services
 
         #endregion
     }
-} 
+}

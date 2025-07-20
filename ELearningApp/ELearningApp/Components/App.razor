@@ -32,6 +32,146 @@
             }
         }
     </script>
+    
+    <!-- SUPER ENHANCED ERROR TRACKING -->
+    <script>
+        let errorCount = 0;
+        let blazorErrorCount = 0;
+
+        // Catch ALL JavaScript errors
+        window.addEventListener('error', function(e) {
+            errorCount++;
+            console.error(`🚨 JS ERROR #${errorCount}:`, e.error);
+            console.error('📍 Error Source:', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno,
+                stack: e.error?.stack,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Check if this is a Blazor-related error
+            if (e.message && (e.message.includes('Blazor') || e.message.includes('blazor'))) {
+                blazorErrorCount++;
+                console.error(`⚡ BLAZOR-SPECIFIC ERROR #${blazorErrorCount}:`, e.message);
+            }
+
+            // Try to show error UI manually if Blazor's isn't showing
+            const errorUI = document.getElementById('blazor-error-ui');
+            if (errorUI && errorUI.style.display === 'none') {
+                console.error('🔧 Manually showing error UI because Blazor error detected');
+                errorUI.style.display = 'block';
+            }
+        });
+
+        // Catch unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            errorCount++;
+            console.error(`🚨 PROMISE REJECTION #${errorCount}:`, e.reason);
+            console.error('📍 Promise Details:', {
+                reason: e.reason,
+                promise: e.promise,
+                stack: e.reason?.stack,
+                timestamp: new Date().toISOString()
+            });
+
+            // Prevent the default browser behavior
+            e.preventDefault();
+        });
+
+        // Monitor Blazor connection state
+        window.monitorBlazorConnection = function() {
+            if (window.Blazor) {
+                console.log('✅ Blazor object is available');
+                
+                // Try to get connection info if available
+                if (window.Blazor.hubConnection) {
+                    console.log('🔗 Blazor Hub Connection State:', window.Blazor.hubConnection.connection?.connectionState);
+                }
+            } else {
+                console.log('❌ Blazor object not yet available');
+            }
+        };
+
+        // Enhanced Blazor error UI monitoring
+        window.monitorErrorUI = function() {
+            const errorUI = document.getElementById('blazor-error-ui');
+            if (!errorUI) {
+                console.error('❌ Could not find blazor-error-ui element!');
+                return;
+            }
+
+            console.log('👀 Setting up error UI monitoring...');
+
+            // Use MutationObserver to watch for changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes') {
+                        const isVisible = !errorUI.classList.contains('hidden') && 
+                                        errorUI.style.display !== 'none';
+                        
+                        if (isVisible) {
+                            console.error('🚨🚨🚨 BLAZOR ERROR UI BECAME VISIBLE! 🚨🚨🚨');
+                            console.error('⏰ Time:', new Date().toISOString());
+                            console.error('📍 Current URL:', window.location.href);
+                            console.error('📊 Error Count:', errorCount);
+                            console.error('⚡ Blazor Error Count:', blazorErrorCount);
+                            console.error('📋 Document Title:', document.title);
+                            
+                            // Try to get more context
+                            console.error('🎯 Active Element:', document.activeElement);
+                            console.error('📜 Recent Console Messages:', console);
+                        }
+                    }
+                });
+            });
+
+            observer.observe(errorUI, {
+                attributes: true,
+                attributeFilter: ['class', 'style']
+            });
+
+            // Also periodically check
+            setInterval(function() {
+                const isVisible = !errorUI.classList.contains('hidden') && 
+                                errorUI.style.display !== 'none';
+                if (isVisible) {
+                    console.error('🚨 Periodic check: Error UI is visible!');
+                }
+            }, 5000);
+        };
+
+        // Start monitoring when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM Content Loaded - Starting enhanced error monitoring');
+            window.monitorErrorUI();
+            window.monitorBlazorConnection();
+            
+            // Set up periodic Blazor monitoring
+            const blazorMonitor = setInterval(function() {
+                window.monitorBlazorConnection();
+                if (window.Blazor) {
+                    console.log('✅ Blazor fully loaded, stopping periodic checks');
+                    clearInterval(blazorMonitor);
+                }
+            }, 2000);
+        });
+
+        // Monitor for any console errors
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            // Call original console.error
+            originalConsoleError.apply(console, args);
+            
+            // Check if this might be a Blazor error
+            const message = args.join(' ');
+            if (message.includes('Blazor') || message.includes('blazor') || message.includes('SignalR')) {
+                console.log('🔍 Potential Blazor-related console error detected:', message);
+            }
+        };
+    </script>
+    
     <HeadOutlet />
 </head>
 
@@ -46,6 +186,52 @@
 
     <script src="_framework/blazor.web.js"></script>
     <script src="js/video-player.js"></script>
+    <script>
+        // Enhanced video player with error handling - don't start Blazor manually
+        window.videoPlayerFunctions = {
+            playVideo: function(videoElement) {
+                try {
+                    if (videoElement && videoElement.play) {
+                        return videoElement.play();
+                    }
+                } catch (error) {
+                    console.error('Error playing video:', error);
+                }
+            },
+            pauseVideo: function(videoElement) {
+                try {
+                    if (videoElement && videoElement.pause) {
+                        videoElement.pause();
+                    }
+                } catch (error) {
+                    console.error('Error pausing video:', error);
+                }
+            },
+            seekVideo: function(videoElement, time) {
+                try {
+                    if (videoElement) {
+                        videoElement.currentTime = time;
+                    }
+                } catch (error) {
+                    console.error('Error seeking video:', error);
+                }
+            }
+        };
+
+        // Listen for when Blazor starts automatically (don't call Blazor.start manually)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOM loaded, Blazor should start automatically');
+            
+            // Wait a bit and then check if Blazor started
+            setTimeout(function() {
+                if (window.Blazor) {
+                    console.log('✅ Blazor started successfully!');
+                } else {
+                    console.error('❌ Blazor did not start within 3 seconds');
+                }
+            }, 3000);
+        });
+    </script>
 </body>
 
 </html>
