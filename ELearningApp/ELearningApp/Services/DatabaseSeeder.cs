@@ -25,6 +25,8 @@ namespace ELearningApp.Services
             // Check if we already have users
             if (await _userManager.Users.AnyAsync())
             {
+                // Update existing instructor images if they're using old URLs
+                await UpdateInstructorImagesAsync();
                 return; // Database already seeded
             }
 
@@ -42,6 +44,41 @@ namespace ELearningApp.Services
             
             // Seed student enrollments
             await SeedEnrollmentsAsync();
+        }
+
+        private async Task UpdateInstructorImagesAsync()
+        {
+            var sarahJohnson = await _userManager.FindByEmailAsync("blazor.instructor@example.com");
+            var michaelChen = await _userManager.FindByEmailAsync("new.instructor@example.com");
+            var emilyDavis = await _userManager.FindByEmailAsync("student@example.com");
+
+            bool updated = false;
+
+            if (sarahJohnson != null && (string.IsNullOrEmpty(sarahJohnson.ProfileImageUrl) || sarahJohnson.ProfileImageUrl.Contains("randomuser.me")))
+            {
+                sarahJohnson.ProfileImageUrl = "https://media-s3-us-east-1.ceros.com/forbes/images/2024/07/30/5b8cedef33c0398f1baf3553ea7a3d9d/1x1.jpg?imageOpt=1&fit=bounds&width=1082";
+                await _userManager.UpdateAsync(sarahJohnson);
+                updated = true;
+            }
+
+            if (michaelChen != null && (string.IsNullOrEmpty(michaelChen.ProfileImageUrl) || michaelChen.ProfileImageUrl.Contains("randomuser.me")))
+            {
+                michaelChen.ProfileImageUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80";
+                await _userManager.UpdateAsync(michaelChen);
+                updated = true;
+            }
+
+            if (emilyDavis != null && (string.IsNullOrEmpty(emilyDavis.ProfileImageUrl) || emilyDavis.ProfileImageUrl.Contains("randomuser.me")))
+            {
+                emilyDavis.ProfileImageUrl = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80";
+                await _userManager.UpdateAsync(emilyDavis);
+                updated = true;
+            }
+
+            if (updated)
+            {
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task SeedCategoriesAsync()
@@ -71,7 +108,7 @@ namespace ELearningApp.Services
                 IsInstructor = true,
                 IsActive = true,
                 Bio = "Senior Software Engineer with 8+ years of experience in .NET and Blazor development. Passionate about teaching modern web development.",
-                ProfileImageUrl = "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
+                ProfileImageUrl = "https://media-s3-us-east-1.ceros.com/forbes/images/2024/07/30/5b8cedef33c0398f1baf3553ea7a3d9d/1x1.jpg?imageOpt=1&fit=bounds&width=1082",
                 CompanyName = "TechCorp Solutions",
                 WebsiteUrl = "https://sarahjohnson.dev",
                 LinkedInUrl = "https://linkedin.com/in/sarahjohnson",
@@ -90,7 +127,7 @@ namespace ELearningApp.Services
                 IsInstructor = true,
                 IsActive = true,
                 Bio = "Experienced developer transitioning into teaching. Specializing in cloud computing and DevOps.",
-                ProfileImageUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
+                ProfileImageUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                 CompanyName = "CloudTech Inc",
                 WebsiteUrl = "https://michaelchen.dev",
                 CreatedAt = DateTime.UtcNow,
@@ -108,7 +145,7 @@ namespace ELearningApp.Services
                 IsInstructor = false,
                 IsActive = true,
                 Bio = "Aspiring web developer learning modern technologies. Currently focused on .NET and Blazor.",
-                ProfileImageUrl = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
+                ProfileImageUrl = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -680,6 +717,98 @@ Optimization strategies:
 
             _context.LessonProgress.AddRange(lessonProgresses);
             await _context.SaveChangesAsync();
+
+            // Create sample announcements
+            await SeedAnnouncementsAsync();
+        }
+
+        private async Task SeedAnnouncementsAsync()
+        {
+            var blazorInstructor = await _userManager.FindByEmailAsync("blazor.instructor@example.com");
+            var allCourses = await _context.Courses.ToListAsync();
+
+            var announcements = new List<CourseAnnouncement>();
+
+            foreach (var course in allCourses)
+            {
+                // Add 2-3 announcements per course
+                announcements.AddRange(new[]
+                {
+                    new CourseAnnouncement
+                    {
+                        CourseId = course.Id,
+                        InstructorId = blazorInstructor!.Id,
+                        Title = "Welcome to the Course!",
+                        Content = $@"Dear Students,
+
+Welcome to {course.Title}! I'm excited to have you join this learning journey.
+
+Here are a few important things to get started:
+• Make sure to follow the lessons in order for the best learning experience
+• Don't hesitate to ask questions in the discussion section
+• Take your time with each module - understanding is more important than speed
+• Practice the exercises and projects to reinforce your learning
+
+Looking forward to seeing your progress!
+
+Best regards,
+Sarah Johnson",
+                        IsImportant = false,
+                        IsPublished = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(15, 30)),
+                        UpdatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(15, 30))
+                    },
+                    new CourseAnnouncement
+                    {
+                        CourseId = course.Id,
+                        InstructorId = blazorInstructor.Id,
+                        Title = "Important: Updated Course Materials",
+                        Content = $@"Hello Everyone,
+
+I've just updated some of the course materials with the latest information and best practices.
+
+What's New:
+• Updated code examples in Module 3
+• New resource links added to Module 5
+• Fixed typos in several lesson descriptions
+• Added bonus content for advanced learners
+
+Please make sure to check out the updated content. If you've already completed those modules, it's worth taking a quick look at the new materials.
+
+Thanks for your attention!",
+                        IsImportant = true,
+                        IsPublished = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(5, 15)),
+                        UpdatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(5, 15))
+                    },
+                    new CourseAnnouncement
+                    {
+                        CourseId = course.Id,
+                        InstructorId = blazorInstructor.Id,
+                        Title = "Tips for Success",
+                        Content = @"Hi Students,
+
+Based on feedback from previous cohorts, here are some tips to help you succeed in this course:
+
+1. **Set a Schedule**: Try to dedicate consistent time each week to the course
+2. **Practice Coding**: Don't just watch - code along with the examples
+3. **Join the Community**: Connect with other students for support and collaboration
+4. **Ask Questions**: No question is too basic - everyone is here to learn
+5. **Build Projects**: Apply what you learn by building your own projects
+
+Remember, learning to code is a journey, not a sprint. Be patient with yourself and celebrate small victories along the way.
+
+You've got this! 💪",
+                        IsImportant = false,
+                        IsPublished = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 7)),
+                        UpdatedAt = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 7))
+                    }
+                });
+            }
+
+            _context.CourseAnnouncements.AddRange(announcements);
+            await _context.SaveChangesAsync();
         }
     }
-} 
+}

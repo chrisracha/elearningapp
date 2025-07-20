@@ -14,6 +14,7 @@ namespace ELearningApp.Data
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<LessonProgress> LessonProgress { get; set; }
         public DbSet<CourseReview> CourseReviews { get; set; }
+        public DbSet<CourseAnnouncement> CourseAnnouncements { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<CourseTag> CourseTags { get; set; }
 
@@ -85,6 +86,19 @@ namespace ELearningApp.Data
                 .HasOne(cr => cr.Student)
                 .WithMany()
                 .HasForeignKey(cr => cr.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure CourseAnnouncement relationships
+            builder.Entity<CourseAnnouncement>()
+                .HasOne(ca => ca.Course)
+                .WithMany()
+                .HasForeignKey(ca => ca.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<CourseAnnouncement>()
+                .HasOne(ca => ca.Instructor)
+                .WithMany()
+                .HasForeignKey(ca => ca.InstructorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure CourseTag relationships (many-to-many)

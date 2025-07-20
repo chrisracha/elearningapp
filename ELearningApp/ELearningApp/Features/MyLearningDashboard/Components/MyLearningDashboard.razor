@@ -10,6 +10,7 @@
 @inject IUserService UserService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@rendermode InteractiveServer
 
 <PageTitle>My Learning Dashboard - E-Learning Platform</PageTitle>
 
@@ -381,7 +382,7 @@
             Console.WriteLine($"Continuing course: {courseId}");
             var url = $"/course/{courseId}/learn";
             Console.WriteLine($"Navigating to: {url}");
-            Navigation.NavigateTo(url);
+            Navigation.NavigateTo(url, forceLoad: true);
             Console.WriteLine("Navigation called successfully");
         }
         catch (Exception ex)
@@ -395,4 +396,4 @@
     {
         await JS.InvokeVoidAsync("alert", "Certificate viewing will be implemented in Phase 2");
     }
-} 
+}

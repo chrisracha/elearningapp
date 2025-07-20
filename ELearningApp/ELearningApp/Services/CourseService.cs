@@ -948,24 +948,117 @@ namespace ELearningApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting review {ReviewId}", reviewId);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Course Announcements
+
+        public async Task<List<CourseAnnouncement>> GetCourseAnnouncementsAsync(int courseId)
+        {
+            try
+            {
+                return await _context.CourseAnnouncements
+                    .Include(ca => ca.Instructor)
+                    .Where(ca => ca.CourseId == courseId && ca.IsPublished)
+                    .OrderByDescending(ca => ca.CreatedAt)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting announcements for course {CourseId}", courseId);
+                return new List<CourseAnnouncement>();
+            }
+        }
+
+        public async Task<CourseAnnouncement> CreateAnnouncementAsync(CourseAnnouncement announcement)
+        {
+            try
+            {
+                announcement.CreatedAt = DateTime.UtcNow;
+                announcement.UpdatedAt = DateTime.UtcNow;
+
+                _context.CourseAnnouncements.Add(announcement);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Created announcement {AnnouncementId} for course {CourseId}", 
+                    announcement.Id, announcement.CourseId);
+                return announcement;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating announcement for course {CourseId}", announcement.CourseId);
                 throw;
             }
         }
 
-        public async Task<IEnumerable<CourseReview>> GetCourseReviewsAsync(int courseId)
+        public async Task<CourseAnnouncement> UpdateAnnouncementAsync(CourseAnnouncement announcement)
+        {
+            try
+            {
+                var existing = await _context.CourseAnnouncements.FindAsync(announcement.Id);
+                if (existing == null)
+                    throw new ArgumentException("Announcement not found");
+
+                existing.Title = announcement.Title;
+                existing.Content = announcement.Content;
+                existing.IsImportant = announcement.IsImportant;
+                existing.IsPublished = announcement.IsPublished;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Updated announcement {AnnouncementId}", announcement.Id);
+                return existing;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating announcement {AnnouncementId}", announcement.Id);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteAnnouncementAsync(int announcementId)
+        {
+            try
+            {
+                var announcement = await _context.CourseAnnouncements.FindAsync(announcementId);
+                if (announcement == null)
+                    return false;
+
+                _context.CourseAnnouncements.Remove(announcement);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Deleted announcement {AnnouncementId}", announcementId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting announcement {AnnouncementId}", announcementId);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Course Reviews
+
+        public async Task<List<CourseReview>> GetCourseReviewsAsync(int courseId)
         {
             try
             {
                 return await _context.CourseReviews
-                    .Include(r => r.Student)
-                    .Where(r => r.CourseId == courseId)
-                    .OrderByDescending(r => r.CreatedAt)
+                    .Include(cr => cr.Student)
+                    .Where(cr => cr.CourseId == courseId)
+                    .OrderByDescending(cr => cr.CreatedAt)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting reviews for course {CourseId}", courseId);
-                throw;
+                return new List<CourseReview>();
             }
         }
 

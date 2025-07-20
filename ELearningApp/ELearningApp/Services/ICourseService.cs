@@ -63,5 +63,17 @@ namespace ELearningApp.Services
         Task<bool> IncrementCourseViewAsync(int courseId);
         Task<int> GetCourseEnrollmentCountAsync(int courseId);
         Task<double> GetCourseAverageRatingAsync(int courseId);
+
+        // Course Announcements
+        Task<List<CourseAnnouncement>> GetCourseAnnouncementsAsync(int courseId);
+        Task<CourseAnnouncement> CreateAnnouncementAsync(CourseAnnouncement announcement);
+        Task<CourseAnnouncement> UpdateAnnouncementAsync(CourseAnnouncement announcement);
+        Task<bool> DeleteAnnouncementAsync(int announcementId);
+
+        // Course Reviews
+        Task<List<CourseReview>> GetCourseReviewsAsync(int courseId);
+        Task<CourseReview> AddReviewAsync(int courseId, string studentId, int rating, string? reviewText);
+        Task<CourseReview> UpdateReviewAsync(int reviewId, int rating, string? reviewText);
+        Task<bool> DeleteReviewAsync(int reviewId);
     }
-} 
+}

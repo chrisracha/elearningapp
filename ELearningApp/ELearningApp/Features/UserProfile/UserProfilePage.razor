@@ -9,6 +9,7 @@
 @inject ICourseService CourseService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@rendermode InteractiveServer
 
 <PageTitle>Profile - @(currentUser?.FirstName ?? "User") @(currentUser?.LastName ?? "")</PageTitle>
 
@@ -219,4 +220,4 @@
     {
         await LoadUserData();
     }
-} 
+}
