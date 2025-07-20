@@ -1,0 +1,265 @@
+@using ELearningApp.Models.Entities
+@using ELearningApp.Services
+@inject IUserService UserService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<div class="space-y-6">
+    <!-- Account Information -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Account Information</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">User ID</label>
+                    <p class="mt-1 text-sm text-gray-900 font-mono">@User?.Id</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Account Type</label>
+                    <p class="mt-1 text-sm text-gray-900">
+                        @if (User?.IsInstructor == true)
+                        {
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                Instructor
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Student
+                            </span>
+                        }
+                    </p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Member Since</label>
+                    <p class="mt-1 text-sm text-gray-900">@User?.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Last Updated</label>
+                    <p class="mt-1 text-sm text-gray-900">@User?.UpdatedAt.ToString("MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Management -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Password Management</h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                <p class="text-sm text-gray-600">
+                    Keep your account secure by using a strong password and updating it regularly.
+                </p>
+                <div class="flex space-x-3">
+                    <a href="/Account/Manage/ChangePassword" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                        </svg>
+                        Change Password
+                    </a>
+                    <button @onclick="ShowPasswordStrength" 
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Password Tips
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Settings -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Privacy Settings</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900">Profile Visibility</h4>
+                    <p class="text-sm text-gray-500">Allow other users to see your profile information</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="profileVisibility" @bind="privacySettings.ProfileVisible" 
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
+                    <label for="profileVisibility" class="ml-2 text-sm text-gray-700">Public Profile</label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900">Learning Progress</h4>
+                    <p class="text-sm text-gray-500">Share your course progress with instructors</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="progressSharing" @bind="privacySettings.ShareProgress" 
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
+                    <label for="progressSharing" class="ml-2 text-sm text-gray-700">Share Progress</label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900">Email Notifications</h4>
+                    <p class="text-sm text-gray-500">Receive email updates about your courses</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="emailNotifications" @bind="privacySettings.EmailNotifications" 
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
+                    <label for="emailNotifications" class="ml-2 text-sm text-gray-700">Enable Notifications</label>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-200">
+                <button @onclick="SavePrivacySettings" disabled="@isSavingPrivacy"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    @if (isSavingPrivacy)
+                    {
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>Save Privacy Settings</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Actions -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Account Actions</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/Account/Manage/PersonalData" 
+                   class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-900">Download Personal Data</p>
+                        <p class="text-sm text-gray-500">Get a copy of your data</p>
+                    </div>
+                </a>
+
+                <button @onclick="ShowDeleteAccountDialog" 
+                        class="flex items-center p-4 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-left">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-red-900">Delete Account</p>
+                        <p class="text-sm text-red-500">Permanently delete your account</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="bg-red-50 border border-red-200 rounded-lg">
+        <div class="px-6 py-4 border-b border-red-200">
+            <h3 class="text-lg font-medium text-red-900">Danger Zone</h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-sm font-medium text-red-900">Delete Account</h4>
+                    <p class="text-sm text-red-700 mt-1">
+                        Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="/Account/Manage/DeletePersonalData" 
+                       class="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Delete Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ApplicationUser? User { get; set; }
+
+    private PrivacySettings privacySettings = new();
+    private bool isSavingPrivacy = false;
+
+    protected override void OnParametersSet()
+    {
+        // Initialize privacy settings (these would come from user preferences in a real app)
+        privacySettings = new PrivacySettings
+        {
+            ProfileVisible = true,
+            ShareProgress = true,
+            EmailNotifications = true
+        };
+    }
+
+    private async Task SavePrivacySettings()
+    {
+        try
+        {
+            isSavingPrivacy = true;
+            // In a real app, you would save these settings to the database
+            await Task.Delay(1000); // Simulate API call
+            await JS.InvokeVoidAsync("alert", "Privacy settings saved successfully!");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error saving privacy settings: {ex.Message}");
+        }
+        finally
+        {
+            isSavingPrivacy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ShowPasswordStrength()
+    {
+        await JS.InvokeVoidAsync("alert", "Password Tips:\n\n• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid common words and patterns\n• Don't reuse passwords from other sites");
+    }
+
+    private async Task ShowDeleteAccountDialog()
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", 
+            "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.");
+        
+        if (confirmed)
+        {
+            Navigation.NavigateTo("/Account/Manage/DeletePersonalData");
+        }
+    }
+
+    private class PrivacySettings
+    {
+        public bool ProfileVisible { get; set; } = true;
+        public bool ShareProgress { get; set; } = true;
+        public bool EmailNotifications { get; set; } = true;
+    }
+} 

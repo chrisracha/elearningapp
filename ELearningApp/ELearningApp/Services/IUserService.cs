@@ -8,4 +8,5 @@ public interface IUserService
     Task<ApplicationUser?> GetUserByIdAsync(string userId);
     Task<bool> IsUserInstructorAsync(string userId);
     Task<bool> SetUserInstructorStatusAsync(string userId, bool isInstructor);
+    Task<bool> UpdateUserAsync(ApplicationUser user);
 } 

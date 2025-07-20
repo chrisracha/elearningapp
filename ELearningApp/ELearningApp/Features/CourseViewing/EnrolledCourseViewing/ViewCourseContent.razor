@@ -75,6 +75,37 @@
                     <div class="p-6">
                         @if (activeTab == ContentTab.Content)
                         {
+                            @if (selectedLesson != null)
+                            {
+                                <!-- Selected Lesson Content -->
+                                <div class="mb-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h2 class="text-xl font-semibold text-gray-900">@selectedLesson.Title</h2>
+                                        <button @onclick="() => selectedLesson = null" 
+                                                class="text-gray-400 hover:text-gray-600">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(selectedLesson.Description))
+                                    {
+                                        <p class="text-gray-600 mb-4">@selectedLesson.Description</p>
+                                    }
+                                    
+                                    @if (selectedLesson.Type == LessonType.Video)
+                                    {
+                                        <ViewVideo Lesson="selectedLesson" OnCompleted="OnLessonCompleted" />
+                                    }
+                                    else if (selectedLesson.Type == LessonType.Article)
+                                    {
+                                        <ViewArticle Lesson="selectedLesson" OnCompleted="OnLessonCompleted" />
+                                    }
+                                </div>
+                            }
+                            
+                            <!-- Course Modules -->
                             <ViewCourseModules Course="course" OnLessonSelected="SelectLesson" />
                         }
                         else if (activeTab == ContentTab.Announcements)
@@ -89,6 +120,8 @@
                 </div>
             </div>
 
+
+
             <!-- Sidebar -->
             <div class="lg:col-span-1">
                 <div class="space-y-6">
@@ -99,15 +132,20 @@
                         <div class="bg-white rounded-lg shadow p-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Current Lesson</h3>
                             <p class="text-sm text-gray-600 mb-4">@selectedLesson.Title</p>
-                            
-                            @if (selectedLesson.Type == LessonType.Video)
-                            {
-                                <ViewVideo Lesson="selectedLesson" OnCompleted="OnLessonCompleted" />
-                            }
-                            else if (selectedLesson.Type == LessonType.Article)
-                            {
-                                <ViewArticle Lesson="selectedLesson" OnCompleted="OnLessonCompleted" />
-                            }
+                            <div class="text-xs text-gray-500">
+                                @if (selectedLesson.Type == LessonType.Video)
+                                {
+                                    <span>📹 Video Lesson</span>
+                                }
+                                else if (selectedLesson.Type == LessonType.Article)
+                                {
+                                    <span>📄 Article</span>
+                                }
+                                @if (selectedLesson.DurationMinutes > 0)
+                                {
+                                    <span class="ml-2">• @selectedLesson.DurationMinutes min</span>
+                                }
+                            </div>
                         </div>
                     }
 
@@ -188,6 +226,15 @@
         await LoadCourseData();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !isLoading && course == null)
+        {
+            // If course failed to load during initialization, try again after render
+            await LoadCourseData();
+        }
+    }
+
     private async Task LoadCourseData()
     {
         try
@@ -210,7 +257,8 @@
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("console.error", "Error loading course:", ex.Message);
+            // Don't call JS during prerendering
+            Console.WriteLine($"Error loading course: {ex.Message}");
         }
         finally
         {
@@ -234,14 +282,24 @@
 
     private void SelectLesson(Lesson lesson)
     {
-        selectedLesson = lesson;
-        StateHasChanged();
+        try
+        {
+            Console.WriteLine($"Selecting lesson: {lesson.Title} (ID: {lesson.Id})");
+            selectedLesson = lesson;
+            StateHasChanged();
+            Console.WriteLine($"Lesson selected successfully. selectedLesson is now: {selectedLesson?.Title}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error selecting lesson: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
     }
 
     private async Task OnLessonCompleted(int lessonId)
     {
         // TODO: Implement lesson completion tracking
-        await JS.InvokeVoidAsync("alert", "Lesson completed! (Progress tracking will be implemented in Phase 2)");
+        Console.WriteLine("Lesson completed! (Progress tracking will be implemented in Phase 2)");
         await LoadCourseData(); // Refresh progress
     }
 
@@ -249,7 +307,7 @@
     {
         if (progressPercentage >= 100)
         {
-            await JS.InvokeVoidAsync("alert", "Certificate generation will be implemented in Phase 2");
+            Console.WriteLine("Certificate generation will be implemented in Phase 2");
         }
     }
 } 

@@ -23,7 +23,7 @@
                         @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
                         {
                             <div class="px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                                 @onclick="() => OnLessonSelected.InvokeAsync(lesson)">
+                                 @onclick="() => SelectLesson(lesson)">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
                                         <!-- Lesson Type Icon -->
@@ -122,4 +122,17 @@
 @code {
     [Parameter] public Course? Course { get; set; }
     [Parameter] public EventCallback<Lesson> OnLessonSelected { get; set; }
+
+    private async Task SelectLesson(Lesson lesson)
+    {
+        try
+        {
+            Console.WriteLine($"ViewCourseModules: Selecting lesson {lesson.Title} (ID: {lesson.Id})");
+            await OnLessonSelected.InvokeAsync(lesson);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ViewCourseModules: Error selecting lesson: {ex.Message}");
+        }
+    }
 } 

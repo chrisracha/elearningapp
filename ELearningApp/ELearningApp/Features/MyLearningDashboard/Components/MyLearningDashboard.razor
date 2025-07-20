@@ -376,7 +376,19 @@
 
     private void ContinueCourse(int courseId)
     {
-        Navigation.NavigateTo($"/course/{courseId}/learn");
+        try
+        {
+            Console.WriteLine($"Continuing course: {courseId}");
+            var url = $"/course/{courseId}/learn";
+            Console.WriteLine($"Navigating to: {url}");
+            Navigation.NavigateTo(url);
+            Console.WriteLine("Navigation called successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error navigating to course: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
     }
 
     private async Task ViewCertificate(int courseId)

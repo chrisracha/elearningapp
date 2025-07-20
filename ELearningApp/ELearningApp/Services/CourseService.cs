@@ -54,7 +54,7 @@ namespace ELearningApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting course with details for ID {CourseId}", id);
-                throw;
+                return null; // Return null instead of throwing to prevent cascading failures
             }
         }
 

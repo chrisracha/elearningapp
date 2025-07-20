@@ -1,6 +1,9 @@
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using ELearningApp.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IUserService UserService
 
 <header class="bg-white shadow-sm border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,38 +32,35 @@
                 
                 <AuthorizeView>
                     <Authorized>
-                        <!-- Student Navigation -->
-                        <AuthorizeView Policy="StudentOnly">
-                            <Authorized Context="studentContext">
-                                <a href="/dashboard" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
-                                    My Learning
-                                </a>
-                            </Authorized>
-                        </AuthorizeView>
-                        
-                        <!-- Instructor Navigation -->
-                        <AuthorizeView Policy="InstructorOnly">
-                            <Authorized Context="instructorContext">
-                                <div class="relative group">
-                                    <button class="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center">
-                                        Instructor
-                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <!-- Dropdown Menu -->
-                                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                        <a href="/instructor/courses" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            My Courses
-                                        </a>
-                                        <a href="/instructor/courses/create" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            Create Course
-                                        </a>
-                                    </div>
+                        @if (currentUser?.IsInstructor == true)
+                        {
+                            <!-- Instructor Navigation -->
+                            <div class="relative group">
+                                <button class="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center">
+                                    Instructor
+                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                    <a href="/instructor/courses" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        My Courses
+                                    </a>
+                                    <a href="/instructor/courses/create" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        Create Course
+                                    </a>
                                 </div>
-                            </Authorized>
-                        </AuthorizeView>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Student Navigation -->
+                            <a href="/dashboard" class="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                                My Learning
+                            </a>
+                        }
                     </Authorized>
                 </AuthorizeView>
             </nav>
@@ -85,22 +85,21 @@
                             
                             <!-- User Dropdown -->
                             <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                <a href="/Account/Manage" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <NavLink href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
-                                    Profile
-                                </a>
-                                <AuthorizeView Policy="StudentOnly">
-                                    <Authorized Context="dashboardContext">
-                                        <a href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                            </svg>
-                                            Dashboard
-                                        </a>
-                                    </Authorized>
-                                </AuthorizeView>
+                                    My Profile
+                                </NavLink>
+                                @if (currentUser?.IsInstructor != true)
+                                {
+                                    <NavLink href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        Dashboard
+                                    </NavLink>
+                                }
                                 <div class="border-t border-gray-100"></div>
                                 <form action="/Account/Logout" method="post" class="block">
                                     <AntiforgeryToken />
@@ -153,27 +152,24 @@
                     
                     <AuthorizeView>
                         <Authorized>
-                            <AuthorizeView Policy="StudentOnly">
-                                <Authorized Context="mobileStudentContext">
-                                    <a href="/dashboard" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
-                                        My Learning
+                            @if (currentUser?.IsInstructor == true)
+                            {
+                                <div class="px-3 py-2">
+                                    <div class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Instructor</div>
+                                    <a href="/instructor/courses" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
+                                        My Courses
                                     </a>
-                                </Authorized>
-                            </AuthorizeView>
-                            
-                            <AuthorizeView Policy="InstructorOnly">
-                                <Authorized Context="mobileInstructorContext">
-                                    <div class="px-3 py-2">
-                                        <div class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Instructor</div>
-                                        <a href="/instructor/courses" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
-                                            My Courses
-                                        </a>
-                                        <a href="/instructor/courses/create" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
-                                            Create Course
-                                        </a>
-                                    </div>
-                                </Authorized>
-                            </AuthorizeView>
+                                    <a href="/instructor/courses/create" class="block px-3 py-1 text-base font-medium text-gray-700 hover:text-primary-600">
+                                        Create Course
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <a href="/dashboard" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                                    My Learning
+                                </a>
+                            }
                         </Authorized>
                         <NotAuthorized>
                             <div class="px-3 py-2 space-y-2">
@@ -195,6 +191,20 @@
 @code {
     private bool isMobileMenuOpen = false;
     private string CurrentUrl => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+    private ApplicationUser? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            currentUser = await UserService.GetCurrentUserAsync();
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the component
+            Console.WriteLine($"Error loading current user in header: {ex.Message}");
+        }
+    }
 
     private void ToggleMobileMenu()
     {
