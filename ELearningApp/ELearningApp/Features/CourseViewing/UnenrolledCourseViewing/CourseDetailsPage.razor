@@ -4,8 +4,10 @@
 @using ELearningApp.Models.Enums
 @using ELearningApp.Services
 @using ELearningApp.Features.CourseViewing.Shared
+@using static ELearningApp.Components.Shared.ModalDialog
 @inject ICourseService CourseService
 @inject IUserService UserService
+@inject IModalService ModalService
 @inject StaticDataService StaticDataService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -419,17 +421,17 @@
             if (success)
             {
                 isEnrolled = true;
-                await JS.InvokeVoidAsync("alert", "Successfully enrolled! You can now access the course content.");
+                await ModalService.ShowAlertAsync("Success", "Successfully enrolled! You can now access the course content.", ModalType.Success);
                 Navigation.NavigateTo($"/course/{CourseId}/learn");
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to enroll in course. Please try again.");
+                await ModalService.ShowAlertAsync("Error", "Failed to enroll in course. Please try again.", ModalType.Error);
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error enrolling in course: {ex.Message}");
+            await ModalService.ShowAlertAsync("Error", $"Error enrolling in course: {ex.Message}", ModalType.Error);
         }
         finally
         {

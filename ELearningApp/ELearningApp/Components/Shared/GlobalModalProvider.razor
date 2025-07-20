@@ -3,15 +3,29 @@
 @inject IModalService ModalService
 @implements IDisposable
 
-<ModalDialog IsVisible="isModalVisible"
-             Title="@currentModal?.Title"
-             Message="@currentModal?.Message"
-             Type="@(currentModal?.Type ?? ModalType.Info)"
-             ConfirmText="@(currentModal?.ConfirmText ?? "Confirm")"
-             CancelText="@(currentModal?.CancelText ?? "Cancel")"
-             OnConfirmed="HandleConfirmed"
-             OnCancelled="HandleCancelled"
-             OnClosed="HandleClosed" />
+<style>
+    .modal-container {
+        position: relative;
+        z-index: 99999 !important;
+        pointer-events: none;
+    }
+    
+    .modal-container > * {
+        pointer-events: auto;
+    }
+</style>
+
+<div class="modal-container" style="position: relative; z-index: 99999;">
+    <ModalDialog IsVisible="isModalVisible"
+                 Title="@currentModal?.Title"
+                 Message="@currentModal?.Message"
+                 Type="@(currentModal?.Type ?? ModalType.Info)"
+                 ConfirmText="@(currentModal?.ConfirmText ?? "Confirm")"
+                 CancelText="@(currentModal?.CancelText ?? "Cancel")"
+                 OnConfirmed="HandleConfirmed"
+                 OnCancelled="HandleCancelled"
+                 OnClosed="HandleClosed" />
+</div>
 
 @code {
     private bool isModalVisible = false;
@@ -26,7 +40,11 @@
     {
         currentModal = modalInfo;
         isModalVisible = true;
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
     }
 
     private async Task HandleConfirmed()

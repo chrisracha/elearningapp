@@ -1,45 +1,36 @@
-@page "/instructor/upload-content/{CourseId:int}"
+@page "/instructor/upload-content/{courseId:int}"
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.DTOs
 @using ELearningApp.Models.Enums
 @using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
+@using static ELearningApp.Components.Shared.ModalDialog
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
+@inject IUserService UserService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
-@rendermode InteractiveServer 
+@inject IModalService ModalService
+@rendermode InteractiveServer
 
 <PageTitle>Upload Content - E-Learning Platform</PageTitle>
 
 <div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-                        <a href="/instructor/courses" class="hover:text-gray-700">Course Management</a>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                        <span class="text-gray-900">Upload Content</span>
-                    </nav>
-                    <h1 class="text-3xl font-bold text-gray-900">Upload Course Content</h1>
-                    @if (course != null)
-                    {
-                        <p class="mt-2 text-gray-600">Managing content for: <span class="font-medium">@course.Title</span></p>
-                    }
-                </div>
-                <button @onclick="NavigateBack" 
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    Back
-                </button>
-            </div>
+            <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+                <a href="/instructor/courses" class="hover:text-gray-700">Course Management</a>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span class="text-gray-900">Upload Content</span>
+            </nav>
+            <h1 class="text-3xl font-bold text-gray-900">Upload Course Content</h1>
+            @if (course != null)
+            {
+                <p class="mt-2 text-gray-600">Managing content for: @course.Title</p>
+            }
         </div>
 
         @if (isLoading)
@@ -52,14 +43,15 @@
         {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                <!-- Course Structure Panel -->
+                <!-- Main Content Area -->
                 <div class="lg:col-span-2">
-                    <div class="bg-white shadow rounded-lg">
+                    <!-- Course Structure -->
+                    <div class="bg-white shadow rounded-lg mb-6">
                         <div class="px-6 py-4 border-b border-gray-200">
                             <div class="flex items-center justify-between">
                                 <h2 class="text-lg font-medium text-gray-900">Course Structure</h2>
-                                <button @onclick="AddModule"
-                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <button @onclick="ShowAddModuleDialog" 
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
@@ -78,70 +70,63 @@
                                             <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                                                 <div class="flex items-center">
                                                     <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 7a2 2 0 012-2h10a2 2 0 012 2v2M7 7h10"></path>
                                                     </svg>
-                                                    <h3 class="text-sm font-medium text-gray-900">Module @module.OrderIndex: @module.Title</h3>
+                                                    <div>
+                                                        <h3 class="font-medium text-gray-900">@module.Title</h3>
+                                                        <p class="text-sm text-gray-500">@module.Description</p>
+                                                    </div>
                                                 </div>
                                                 <div class="flex items-center space-x-2">
-                                                    <button @onclick="() => AddLesson(module.Id)"
-                                                            class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                    <button @onclick="() => ShowAddLessonDialog(module.Id)" 
+                                                            class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                        </svg>
                                                         Add Lesson
                                                     </button>
-                                                    <div class="text-gray-300">|</div>
-                                                    <button @onclick="() => EditModule(module.Id)"
-                                                            class="text-gray-600 hover:text-gray-800 text-sm">
+                                                    <button @onclick="() => EditModule(module.Id)" 
+                                                            class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                                         Edit
                                                     </button>
-                                                    <button @onclick="() => DeleteModule(module.Id)"
-                                                            class="text-red-600 hover:text-red-800 text-sm">
+                                                    <button @onclick="() => DeleteModule(module.Id)" 
+                                                            class="inline-flex items-center px-3 py-1 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                                                         Delete
                                                     </button>
                                                 </div>
                                             </div>
                                             
+                                            <!-- Lessons in this module -->
                                             @if (module.Lessons?.Any() == true)
                                             {
                                                 <div class="p-4">
-                                                    <div class="space-y-2">
+                                                    <div class="space-y-3">
                                                         @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
                                                         {
-                                                            <div class="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-md hover:bg-gray-50">
+                                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                                                                 <div class="flex items-center">
-                                                                    <svg class="w-4 h-4 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        @if (lesson.Type == LessonType.Video)
-                                                                        {
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15a2 2 0 002-2V9a2 2 0 00-2-2h-1.172a1 1 0 01-.707-.293L10.707 4.293A1 1 0 0010 4H8a2 2 0 00-2 2v5a2 2 0 002 2z"></path>
-                                                                        }
-                                                                        else if (lesson.Type == LessonType.Article)
-                                                                        {
+                                                                    @if (lesson.Type == LessonType.Video)
+                                                                    {
+                                                                        <svg class="w-4 h-4 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15M6 6l3-3m0 0l3 3m-3-3v12"></path>
+                                                                        </svg>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <svg class="w-4 h-4 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                                                        }
-                                                                    </svg>
+                                                                        </svg>
+                                                                    }
                                                                     <div>
-                                                                        <span class="text-sm font-medium text-gray-900">@lesson.Title</span>
-                                                                        <div class="flex items-center space-x-2 text-xs text-gray-500">
-                                                                            <span class="px-2 py-1 bg-gray-100 rounded">@lesson.Type</span>
-                                                                            <span>@lesson.DurationMinutes min</span>
-                                                                            @if (lesson.IsFree)
-                                                                            {
-                                                                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded">Free</span>
-                                                                            }
-                                                                        </div>
+                                                                        <h4 class="text-sm font-medium text-gray-900">@lesson.Title</h4>
+                                                                        <p class="text-xs text-gray-500">@lesson.Type.ToString() • @lesson.DurationMinutes min</p>
                                                                     </div>
                                                                 </div>
                                                                 <div class="flex items-center space-x-2">
-                                                                    <button @onclick="() => EditLesson(lesson.Id)"
-                                                                            class="text-gray-600 hover:text-gray-800 text-sm">
-                                                                        Edit
-                                                                    </button>
-                                                                    <button @onclick="() => DeleteLesson(lesson.Id)"
-                                                                            class="text-red-600 hover:text-red-800 text-sm">
-                                                                        Delete
-                                                                    </button>
+                                                                    <button @onclick="() => EditLesson(lesson.Id)" 
+                                                                            class="text-xs text-blue-600 hover:text-blue-800">Edit</button>
+                                                                    <button @onclick="() => DeleteLesson(lesson.Id)" 
+                                                                            class="text-xs text-red-600 hover:text-red-800">Delete</button>
                                                                 </div>
                                                             </div>
                                                         }
@@ -151,7 +136,9 @@
                                             else
                                             {
                                                 <div class="p-4 text-center text-gray-500">
-                                                    <p class="text-sm">No lessons yet. Click "Add Lesson" to get started.</p>
+                                                    <p class="text-sm">No lessons yet</p>
+                                                    <button @onclick="() => ShowAddLessonDialog(module.Id)" 
+                                                            class="mt-2 text-blue-600 hover:text-blue-800 text-sm">Add your first lesson</button>
                                                 </div>
                                             }
                                         </div>
@@ -160,15 +147,14 @@
                             }
                             else
                             {
-                                <!-- Empty State -->
                                 <div class="text-center py-12">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 7a2 2 0 012-2h10a2 2 0 012 2v2M7 7h10"></path>
                                     </svg>
                                     <h3 class="mt-2 text-sm font-medium text-gray-900">No modules yet</h3>
                                     <p class="mt-1 text-sm text-gray-500">Get started by creating your first module.</p>
                                     <div class="mt-6">
-                                        <button @onclick="AddModule"
+                                        <button @onclick="ShowAddModuleDialog" 
                                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -219,7 +205,7 @@
                                 <button @onclick="UploadVideo"
                                         class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H15M6 6l3-3m0 0l3 3m-3-3v12"></path>
                                     </svg>
                                     Upload Video
                                 </button>
@@ -231,8 +217,6 @@
                                     </svg>
                                     Upload Document
                                 </button>
-
-
                             </div>
 
                             <!-- Upload Tips -->
@@ -260,6 +244,136 @@
     </div>
 </div>
 
+<!-- Add Module Modal -->
+@if (showAddModuleModal)
+{
+    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 99999;">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" style="z-index: 99998;" @onclick="() => showAddModuleModal = false"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative" style="z-index: 99999;">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Module</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="moduleTitle" class="block text-sm font-medium text-gray-700">Module Title</label>
+                            <input type="text" id="moduleTitle" @bind="newModuleTitle" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="Enter module title" />
+                        </div>
+                        <div>
+                            <label for="moduleDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="moduleDescription" @bind="newModuleDescription" rows="3"
+                                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                      placeholder="Enter module description"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" @onclick="AddModule"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Add Module
+                    </button>
+                    <button type="button" @onclick="() => showAddModuleModal = false"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Add Lesson Modal -->
+@if (showAddLessonModal)
+{
+    <div class="fixed inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="z-index: 99999;">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" style="z-index: 99998;" @onclick="() => showAddLessonModal = false"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full relative" style="z-index: 99999;">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Lesson</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="lessonTitle" class="block text-sm font-medium text-gray-700">Lesson Title</label>
+                            <input type="text" id="lessonTitle" @bind="newLessonTitle" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="Enter lesson title" />
+                        </div>
+                        <div>
+                            <label for="lessonDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="lessonDescription" @bind="newLessonDescription" rows="2"
+                                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                      placeholder="Enter lesson description"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Lesson Type</label>
+                            <div class="mt-2 space-y-2">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" @onchange="() => newLessonType = LessonType.Video" 
+                                           checked="@(newLessonType == LessonType.Video)"
+                                           class="form-radio h-4 w-4 text-blue-600" />
+                                    <span class="ml-2">Video</span>
+                                </label>
+                                <label class="inline-flex items-center ml-6">
+                                    <input type="radio" @onchange="() => newLessonType = LessonType.Article" 
+                                           checked="@(newLessonType == LessonType.Article)"
+                                           class="form-radio h-4 w-4 text-blue-600" />
+                                    <span class="ml-2">Article</span>
+                                </label>
+                            </div>
+                        </div>
+                        @if (newLessonType == LessonType.Video)
+                        {
+                            <div>
+                                <label for="videoUrl" class="block text-sm font-medium text-gray-700">Video URL</label>
+                                <input type="url" id="videoUrl" @bind="newLessonVideoUrl" 
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                       placeholder="Enter video URL (YouTube, Vimeo, etc.)" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <label for="articleContent" class="block text-sm font-medium text-gray-700">Article Content</label>
+                                <textarea id="articleContent" @bind="newLessonContent" rows="8"
+                                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                          placeholder="Enter article content..."></textarea>
+                            </div>
+                        }
+                        <div>
+                            <label for="lessonDuration" class="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+                            <input type="number" id="lessonDuration" @bind="newLessonDuration" min="1"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="Enter duration in minutes" />
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="lessonIsFree" @bind="newLessonIsFree" 
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                            <label for="lessonIsFree" class="ml-2 block text-sm text-gray-900">
+                                Free preview lesson
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" @onclick="AddLesson"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Add Lesson
+                    </button>
+                    <button type="button" @onclick="() => showAddLessonModal = false"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public int CourseId { get; set; }
     
@@ -268,6 +382,22 @@
     private bool isLoading = true;
     private bool isUploading = false;
     private int uploadProgress = 0;
+
+    // Add Module Modal
+    private bool showAddModuleModal = false;
+    private string newModuleTitle = "";
+    private string newModuleDescription = "";
+
+    // Add Lesson Modal
+    private bool showAddLessonModal = false;
+    private int selectedModuleId = 0;
+    private string newLessonTitle = "";
+    private string newLessonDescription = "";
+    private LessonType newLessonType = LessonType.Video;
+    private string newLessonVideoUrl = "";
+    private string newLessonContent = "";
+    private int newLessonDuration = 10;
+    private bool newLessonIsFree = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -288,7 +418,7 @@
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("console.error", "Error loading course:", ex.Message);
+            await ModalService.ShowAlertAsync("Error", $"Error loading course: {ex.Message}", ModalType.Error);
         }
         finally
         {
@@ -297,74 +427,154 @@
         }
     }
 
+    private void ShowAddModuleDialog()
+    {
+        newModuleTitle = "";
+        newModuleDescription = "";
+        showAddModuleModal = true;
+    }
+
     private async Task AddModule()
     {
-        var title = await JS.InvokeAsync<string>("prompt", "Enter module title:");
-        if (!string.IsNullOrWhiteSpace(title))
+        if (string.IsNullOrWhiteSpace(newModuleTitle))
         {
-            await JS.InvokeVoidAsync("alert", $"Creating module: {title} (This feature will be implemented in Phase 2)");
-            // TODO: Implement module creation
+            await ModalService.ShowAlertAsync("Validation Error", "Module title is required.", ModalType.Warning);
+            return;
+        }
+
+        try
+        {
+            var newModule = new Module
+            {
+                Title = newModuleTitle.Trim(),
+                Description = newModuleDescription?.Trim() ?? "",
+                CourseId = CourseId,
+                OrderIndex = (modules?.Count ?? 0) + 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Here you would call a service method to create the module
+            // await CourseService.CreateModuleAsync(newModule);
+
+            await ModalService.ShowAlertAsync("Success", "Module created successfully! (Feature in development)", ModalType.Success);
+            showAddModuleModal = false;
+            await LoadCourse(); // Reload to show new module
+        }
+        catch (Exception ex)
+        {
+            await ModalService.ShowAlertAsync("Error", $"Error creating module: {ex.Message}", ModalType.Error);
+        }
+    }
+
+    private void ShowAddLessonDialog(int moduleId)
+    {
+        selectedModuleId = moduleId;
+        newLessonTitle = "";
+        newLessonDescription = "";
+        newLessonType = LessonType.Video;
+        newLessonVideoUrl = "";
+        newLessonContent = "";
+        newLessonDuration = 10;
+        newLessonIsFree = false;
+        showAddLessonModal = true;
+    }
+
+    private async Task AddLesson()
+    {
+        if (string.IsNullOrWhiteSpace(newLessonTitle))
+        {
+            await ModalService.ShowAlertAsync("Validation Error", "Lesson title is required.", ModalType.Warning);
+            return;
+        }
+
+        if (newLessonType == LessonType.Video && string.IsNullOrWhiteSpace(newLessonVideoUrl))
+        {
+            await ModalService.ShowAlertAsync("Validation Error", "Video URL is required for video lessons.", ModalType.Warning);
+            return;
+        }
+
+        if (newLessonType == LessonType.Article && string.IsNullOrWhiteSpace(newLessonContent))
+        {
+            await ModalService.ShowAlertAsync("Validation Error", "Article content is required for article lessons.", ModalType.Warning);
+            return;
+        }
+
+        try
+        {
+            var selectedModule = modules?.FirstOrDefault(m => m.Id == selectedModuleId);
+            if (selectedModule == null)
+            {
+                await ModalService.ShowAlertAsync("Error", "Selected module not found.", ModalType.Error);
+                return;
+            }
+
+            var newLesson = new Lesson
+            {
+                Title = newLessonTitle.Trim(),
+                Description = newLessonDescription?.Trim() ?? "",
+                Type = newLessonType,
+                VideoUrl = newLessonType == LessonType.Video ? newLessonVideoUrl.Trim() : null,
+                Content = newLessonType == LessonType.Article ? newLessonContent.Trim() : null,
+                DurationMinutes = newLessonDuration,
+                IsFree = newLessonIsFree,
+                ModuleId = selectedModuleId,
+                OrderIndex = (selectedModule.Lessons?.Count ?? 0) + 1,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Here you would call a service method to create the lesson
+            // await CourseService.CreateLessonAsync(newLesson);
+
+            await ModalService.ShowAlertAsync("Success", "Lesson created successfully! (Feature in development)", ModalType.Success);
+            showAddLessonModal = false;
+            await LoadCourse(); // Reload to show new lesson
+        }
+        catch (Exception ex)
+        {
+            await ModalService.ShowAlertAsync("Error", $"Error creating lesson: {ex.Message}", ModalType.Error);
         }
     }
 
     private async Task EditModule(int moduleId)
     {
-        await JS.InvokeVoidAsync("alert", "Module editing will be implemented in Phase 2");
-        // TODO: Implement module editing
+        await ModalService.ShowAlertAsync("Info", "Module editing will be implemented in Phase 2", ModalType.Info);
     }
 
     private async Task DeleteModule(int moduleId)
     {
-        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this module and all its lessons?"))
+        if (await ModalService.ShowConfirmAsync("Confirm Delete", "Are you sure you want to delete this module and all its lessons?", "Delete", "Cancel"))
         {
-            await JS.InvokeVoidAsync("alert", "Module deletion will be implemented in Phase 2");
-            // TODO: Implement module deletion
+            await ModalService.ShowAlertAsync("Info", "Module deletion will be implemented in Phase 2", ModalType.Info);
         }
-    }
-
-    private async Task AddLesson(int moduleId)
-    {
-        await JS.InvokeVoidAsync("alert", "Lesson creation will be implemented in Phase 2");
-        // TODO: Implement lesson creation
     }
 
     private async Task EditLesson(int lessonId)
     {
-        await JS.InvokeVoidAsync("alert", "Lesson editing will be implemented in Phase 2");
-        // TODO: Implement lesson editing
+        await ModalService.ShowAlertAsync("Info", "Lesson editing will be implemented in Phase 2", ModalType.Info);
     }
 
     private async Task DeleteLesson(int lessonId)
     {
-        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this lesson?"))
+        if (await ModalService.ShowConfirmAsync("Confirm Delete", "Are you sure you want to delete this lesson?", "Delete", "Cancel"))
         {
-            await JS.InvokeVoidAsync("alert", "Lesson deletion will be implemented in Phase 2");
-            // TODO: Implement lesson deletion
+            await ModalService.ShowAlertAsync("Info", "Lesson deletion will be implemented in Phase 2", ModalType.Info);
         }
     }
 
     private async Task TriggerFileUpload()
     {
-        await JS.InvokeVoidAsync("alert", "File upload functionality will be implemented in Phase 2");
-        // TODO: Implement file upload
+        await ModalService.ShowAlertAsync("Info", "File upload functionality will be implemented in Phase 2", ModalType.Info);
     }
 
     private async Task UploadVideo()
     {
-        await JS.InvokeVoidAsync("alert", "Video upload functionality will be implemented in Phase 2");
-        // TODO: Implement video upload
+        await ModalService.ShowAlertAsync("Info", "Video upload functionality will be implemented in Phase 2", ModalType.Info);
     }
 
     private async Task UploadDocument()
     {
-        await JS.InvokeVoidAsync("alert", "Document upload functionality will be implemented in Phase 2");
-        // TODO: Implement document upload
+        await ModalService.ShowAlertAsync("Info", "Document upload functionality will be implemented in Phase 2", ModalType.Info);
     }
-
-
-
-    private void NavigateBack()
-    {
-        Navigation.NavigateTo("/instructor/courses");
-    }
-} 
+}

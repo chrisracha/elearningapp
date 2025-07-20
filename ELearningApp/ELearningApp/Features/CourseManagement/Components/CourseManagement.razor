@@ -14,8 +14,8 @@
 
 <PageTitle>Course Management - E-Learning Platform</PageTitle>
 
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gray-50 py-8" style="overflow: visible;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="overflow: visible;">
         
         <!-- Header -->
         <div class="mb-8">
@@ -72,11 +72,11 @@
         }
         else if (filteredCourses?.Any() == true)
         {
-            <!-- Use overflow-visible on the grid container to prevent clipping -->
+            <!-- Use overflow-visible on ALL containers to prevent clipping -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" style="overflow: visible;">
                 @foreach (var course in filteredCourses)
                 {
-                    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 relative" style="@(activeDropdown == course.Id ? "overflow: visible; z-index: 50;" : "")">
+                    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 relative" style="overflow: visible;">
                         <!-- Course Image -->
                         <div class="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
                             @if (!string.IsNullOrEmpty(course.ImageUrl))
@@ -100,11 +100,12 @@
                             </div>
 
                             <!-- Actions Menu -->
-                            <div class="absolute top-3 left-3">
+                            <div class="absolute top-3 left-3" style="z-index: 1000;">
                                 <div class="relative">
                                     <button @onclick="() => ToggleDropdown(course.Id)"
                                             @onclick:stopPropagation="true"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-full text-gray-700 hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                            class="inline-flex items-center justify-center w-8 h-8 bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-full text-gray-700 hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                            style="position: relative; z-index: 1001;">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
                                         </svg>
@@ -112,8 +113,8 @@
                                     
                                     @if (activeDropdown == course.Id)
                                     {
-                                        <div class="absolute left-0 top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50" 
-                                             style="min-width: 12rem;">
+                                        <div class="absolute left-0 top-10 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5" 
+                                             style="min-width: 12rem; z-index: 1002; position: absolute;">
                                             <div class="py-1">
                                                 <button @onclick="() => EditCourse(course.Id)"
                                                         @onclick:stopPropagation="true"
@@ -243,7 +244,7 @@
 <!-- Click Outside Handler -->
 @if (activeDropdown.HasValue)
 {
-    <div class="fixed inset-0 z-10" @onclick="() => { activeDropdown = null; StateHasChanged(); }"></div>
+    <div class="fixed inset-0" style="z-index: 500;" @onclick="() => { activeDropdown = null; StateHasChanged(); }"></div>
 }
 
 @code {
