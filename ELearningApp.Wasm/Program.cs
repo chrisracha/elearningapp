@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.LocalStorage;
-using ELearningApp.Wasm;
-using ELearningApp.Wasm.Services;
+using ELearningApp.Wasm.Wasm;
+using ELearningApp.Wasm.Wasm.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

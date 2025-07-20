@@ -1,8 +1,8 @@
-using ELearningApp.Data;
+using ELearningApp.Wasm.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace ELearningApp.Services;
+namespace ELearningApp.Wasm.Services;
 
 public class UserService : IUserService
 {

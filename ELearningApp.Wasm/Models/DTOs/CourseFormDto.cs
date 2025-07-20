@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using ELearningApp.Models.Enums;
+using ELearningApp.Wasm.Models.Enums;
 
-namespace ELearningApp.Models.DTOs
+namespace ELearningApp.Wasm.Models.DTOs
 {
     public class CourseCreateDto
     {

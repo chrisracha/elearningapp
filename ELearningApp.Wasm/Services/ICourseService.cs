@@ -1,8 +1,8 @@
-using ELearningApp.Models.Entities;
-using ELearningApp.Models.Enums;
-using ELearningApp.Models.DTOs;
+using ELearningApp.Wasm.Models.Entities;
+using ELearningApp.Wasm.Models.Enums;
+using ELearningApp.Wasm.Models.DTOs;
 
-namespace ELearningApp.Services
+namespace ELearningApp.Wasm.Services
 {
     public interface ICourseService
     {

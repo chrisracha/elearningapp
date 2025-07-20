@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ELearningApp.Models.Enums;
+using ELearningApp.Wasm.Models.Enums;
 
-namespace ELearningApp.Models.Entities
+namespace ELearningApp.Wasm.Models.Entities
 {
     public class Lesson
     {

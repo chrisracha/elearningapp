@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ELearningApp.Models.Entities
+namespace ELearningApp.Wasm.Models.Entities
 {
     public class CourseTag
     {

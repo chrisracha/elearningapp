@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using ELearningApp.Models.Entities;
+using ELearningApp.Wasm.Models.Entities;
 
-namespace ELearningApp.Models.Entities
+namespace ELearningApp.Wasm.Models.Entities
 {
     public class Category
     {

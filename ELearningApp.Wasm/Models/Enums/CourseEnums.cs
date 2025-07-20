@@ -1,4 +1,4 @@
-namespace ELearningApp.Models.Enums
+namespace ELearningApp.Wasm.Models.Enums
 {
     public enum CourseLevel
     {

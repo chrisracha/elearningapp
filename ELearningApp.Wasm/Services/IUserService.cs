@@ -1,6 +1,6 @@
-using ELearningApp.Data;
+using ELearningApp.Wasm.Data;
 
-namespace ELearningApp.Services;
+namespace ELearningApp.Wasm.Services;
 
 public interface IUserService
 {

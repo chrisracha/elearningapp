@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
-using ELearningApp.Wasm.Models.Entities;
-using ELearningApp.Wasm.Models.Enums;
-using ELearningApp.Wasm.Models.DTOs;
+using ELearningApp.Wasm.Wasm.Models.Entities;
+using ELearningApp.Wasm.Wasm.Models.Enums;
+using ELearningApp.Wasm.Wasm.Models.DTOs;
 
-namespace ELearningApp.Wasm.Services
+namespace ELearningApp.Wasm.Wasm.Services
 {
     public class CourseService : ICourseService
     {

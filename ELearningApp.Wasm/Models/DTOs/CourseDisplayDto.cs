@@ -1,4 +1,4 @@
-namespace ELearningApp.Models.DTOs
+namespace ELearningApp.Wasm.Models.DTOs
 {
     public class CourseDisplayDto
     {

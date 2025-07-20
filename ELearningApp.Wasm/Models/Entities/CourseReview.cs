@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ELearningApp.Data;
+using ELearningApp.Wasm.Data;
 
-namespace ELearningApp.Models.Entities
+namespace ELearningApp.Wasm.Models.Entities
 {
     public class CourseReview
     {

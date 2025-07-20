@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace ELearningApp.Wasm.Services;
+namespace ELearningApp.Wasm.Wasm.Services;
 
 public class ApiAuthenticationStateProvider : AuthenticationStateProvider
 {

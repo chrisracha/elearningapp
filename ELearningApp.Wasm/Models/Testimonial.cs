@@ -1,4 +1,4 @@
-namespace ELearningApp.Models;
+namespace ELearningApp.Wasm.Models;
 
 public class Testimonial
 {
