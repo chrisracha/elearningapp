@@ -1,11 +1,12 @@
 @using Microsoft.JSInterop
+@using System.Web
 
 <div class="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden">
-    @if (!string.IsNullOrEmpty(YouTubeVideoId))
+    @if (!string.IsNullOrEmpty(ExtractedVideoId))
     {
         <!-- YouTube Embed -->
         <div class="w-full h-full">
-            <iframe src="https://www.youtube.com/embed/@YouTubeVideoId?enablejsapi=1&rel=0&modestbranding=1" 
+            <iframe src="https://www.youtube.com/embed/@ExtractedVideoId?enablejsapi=1&rel=0&modestbranding=1" 
                     class="w-full h-full" 
                     frameborder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -67,4 +68,80 @@
 @code {
     [Parameter] public string YouTubeVideoId { get; set; } = string.Empty;
     [Parameter] public string CourseTitle { get; set; } = string.Empty;
-} 
+
+    private string ExtractedVideoId => ExtractYouTubeVideoId(YouTubeVideoId);
+
+    private string ExtractYouTubeVideoId(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+
+        // If it's already a clean video ID (11 characters, alphanumeric with hyphens/underscores)
+        if (input.Length == 11 && System.Text.RegularExpressions.Regex.IsMatch(input, @"^[a-zA-Z0-9_-]{11}$"))
+            return input;
+
+        // If it's a URL, extract the video ID
+        try
+        {
+            var uri = new Uri(input);
+            
+            // Standard YouTube watch URL (youtube.com/watch?v=VIDEO_ID)
+            if (uri.Host.Contains("youtube.com") && uri.AbsolutePath == "/watch")
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            // YouTube short URL (youtu.be/VIDEO_ID)
+            if (uri.Host.Contains("youtu.be"))
+            {
+                var segments = uri.AbsolutePath.TrimStart('/').Split('?');
+                return segments.Length > 0 ? segments[0] : string.Empty;
+            }
+            
+            // YouTube embed URL (youtube.com/embed/VIDEO_ID)
+            if (uri.Host.Contains("youtube.com") && uri.AbsolutePath.StartsWith("/embed/"))
+            {
+                var videoId = uri.AbsolutePath.Replace("/embed/", "").Split('?')[0];
+                return videoId;
+            }
+            
+            // YouTube URL with additional parameters
+            if (uri.Host.Contains("youtube.com") && uri.Query.Contains("v="))
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            return string.Empty;
+        }
+        catch
+        {
+            // Fallback: try to extract video ID using regex
+            try
+            {
+                var patterns = new[]
+                {
+                    @"(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})",
+                    @"youtube\.com\/.*[?&]v=([a-zA-Z0-9_-]{11})",
+                    @"youtu\.be\/([a-zA-Z0-9_-]{11})"
+                };
+                
+                foreach (var pattern in patterns)
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(input, pattern);
+                    if (match.Success && match.Groups.Count > 1)
+                    {
+                        return match.Groups[1].Value;
+                    }
+                }
+            }
+            catch
+            {
+                // If all else fails, return the original input (might be a clean video ID)
+            }
+            
+            return string.Empty;
+        }
+    }
+}

@@ -182,8 +182,8 @@ What you'll learn:
 
 This course includes hands-on projects, real-world examples, and practical exercises to reinforce your learning.",
                 ImageUrl = "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-                YouTubeVideoId = "3tVdF1JTfXY", // Blazor tutorial video
-                YouTubePreviewVideoId = "3tVdF1JTfXY",
+                YouTubeVideoId = "QnBtqkKDuGo", // Blazor tutorial video
+                YouTubePreviewVideoId = "Ku6Wa0omTZA", // Blazor setup tutorial
                 WhatYouWillLearn = @"• Build modern web applications with Blazor
 • Understand the difference between Server and WebAssembly
 • Implement authentication and authorization
@@ -324,7 +324,7 @@ Key benefits:
                 {
                     Title = "Setting Up Your Development Environment",
                     Description = "Install and configure tools for Blazor development",
-                    VideoUrl = "https://www.youtube.com/watch?v=3tVdF1JTfXY",
+                    VideoUrl = "https://youtu.be/yBw_KOz1vCA?si=nGcNwQFv54K-fvWF",
                     Type = LessonType.Video,
                     OrderIndex = 2,
                     DurationMinutes = 25,
@@ -388,7 +388,7 @@ Architecture components:
                 {
                     Title = "Component Lifecycle",
                     Description = "Understanding component lifecycle methods",
-                    VideoUrl = "https://www.youtube.com/watch?v=3tVdF1JTfXY",
+                    VideoUrl = "https://youtu.be/_m3egdHi8Bo?si=yTQ9-GSETycYvR9w",
                     Type = LessonType.Video,
                     OrderIndex = 2,
                     DurationMinutes = 35,
@@ -452,7 +452,7 @@ Blazor WebAssembly:
                 {
                     Title = "Setting Up Blazor WebAssembly",
                     Description = "Create and configure a Blazor WebAssembly project",
-                    VideoUrl = "https://www.youtube.com/watch?v=3tVdF1JTfXY",
+                    VideoUrl = "https://youtu.be/GHDgR_-poc4?si=N9xm4vNSrcD88sxM",
                     Type = LessonType.Video,
                     OrderIndex = 2,
                     DurationMinutes = 30,
@@ -518,7 +518,7 @@ Topics covered:
                 {
                     Title = "API Integration",
                     Description = "Consuming REST APIs in Blazor applications",
-                    VideoUrl = "https://www.youtube.com/watch?v=3tVdF1JTfXY",
+                    VideoUrl = "https://youtu.be/0bOP3HheD2k?si=cqYjtmxr1jZNbFxn",
                     Type = LessonType.Video,
                     OrderIndex = 2,
                     DurationMinutes = 35,
@@ -563,7 +563,7 @@ Implementation steps:
                 {
                     Title = "SignalR Integration",
                     Description = "Add real-time features to your Blazor applications",
-                    VideoUrl = "https://www.youtube.com/watch?v=3tVdF1JTfXY",
+                    VideoUrl = "https://youtu.be/RBVIclt4sOo?si=smBSo4ogGJf-NaoO",
                     Type = LessonType.Video,
                     OrderIndex = 1,
                     DurationMinutes = 45,
@@ -602,7 +602,7 @@ Optimization strategies:
                 {
                     Title = "Deployment Strategies",
                     Description = "Deploy your Blazor applications to production",
-                    VideoUrl = "https://www.youtube.com/watch?v=3tVdF1JTfXY",
+                    VideoUrl = "https://youtu.be/vgCmkL4l0h8?si=7o-U8Jb97YQC3VQJ",
                     Type = LessonType.Video,
                     OrderIndex = 2,
                     DurationMinutes = 30,
@@ -631,8 +631,8 @@ Optimization strategies:
                     ShortDescription = "Learn React.js from scratch with modern practices and real-world projects",
                     LongDescription = "A comprehensive React course covering hooks, context, routing, and state management.",
                     ImageUrl = "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-                    YouTubeVideoId = "jNQXAC9IVRw",
-                    YouTubePreviewVideoId = "dQw4w9WgXcQ",
+                    YouTubeVideoId = "LvBBnMFNGbo", // React tutorial video
+                    YouTubePreviewVideoId = "SqcY0GlETPk", // React basics video
                     Level = CourseLevel.Intermediate,
                     Status = CourseStatus.Published,
                     IsPublished = true,
@@ -652,8 +652,8 @@ Optimization strategies:
                     ShortDescription = "Master the fundamentals of business strategy and competitive advantage",
                     LongDescription = "Learn how to develop and implement effective business strategies.",
                     ImageUrl = "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-                    YouTubeVideoId = "dQw4w9WgXcQ",
-                    YouTubePreviewVideoId = "jNQXAC9IVRw",
+                    YouTubeVideoId = "3ex8VWulUks", // Business strategy video
+                    YouTubePreviewVideoId = "8YJS85UzMEE", // Business fundamentals video
                     Level = CourseLevel.Beginner,
                     Status = CourseStatus.Published,
                     IsPublished = true,

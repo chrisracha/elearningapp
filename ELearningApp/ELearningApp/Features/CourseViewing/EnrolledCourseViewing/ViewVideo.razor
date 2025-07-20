@@ -1,30 +1,55 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.Enums
+@using System.Web
 
 <div class="space-y-4">
     @if (Lesson != null)
     {
-        <div class="bg-gray-900 rounded-lg aspect-video flex items-center justify-center">
+        <div class="bg-gray-900 rounded-lg aspect-video overflow-hidden">
             @if (!string.IsNullOrEmpty(Lesson.VideoUrl))
             {
-                <!-- Placeholder for actual video player -->
-                <div class="text-center text-white">
-                    <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
-                    </svg>
-                    <p class="text-lg font-medium">Video Player</p>
-                    <p class="text-sm text-gray-300">Video integration will be implemented in Phase 2</p>
-                    <p class="text-xs text-gray-400 mt-2">Video URL: @Lesson.VideoUrl</p>
-                </div>
+                @if (!string.IsNullOrEmpty(YouTubeVideoId))
+                {
+                    <!-- YouTube Embed -->
+                    <iframe src="https://www.youtube.com/embed/@YouTubeVideoId?enablejsapi=1&rel=0&modestbranding=1&autoplay=0" 
+                            class="w-full h-full" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            title="@Lesson.Title">
+                    </iframe>
+                }
+                else
+                {
+                    <!-- Fallback for non-YouTube URLs -->
+                    <div class="w-full h-full flex items-center justify-center text-center text-white">
+                        <div>
+                            <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                            </svg>
+                            <p class="text-lg font-medium">External Video</p>
+                            <p class="text-sm text-gray-300 mb-4">This video is hosted externally</p>
+                            <a href="@Lesson.VideoUrl" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                Watch Video
+                            </a>
+                        </div>
+                    </div>
+                }
             }
             else
             {
-                <div class="text-center text-white">
-                    <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                    </svg>
-                    <p class="text-lg font-medium">No Video Available</p>
-                    <p class="text-sm text-gray-300">This lesson doesn't have a video yet</p>
+                <div class="w-full h-full flex items-center justify-center text-center text-white">
+                    <div>
+                        <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-lg font-medium">No Video Available</p>
+                        <p class="text-sm text-gray-300">This lesson doesn't have a video yet</p>
+                    </div>
                 </div>
             }
         </div>
@@ -35,6 +60,17 @@
                 @if (Lesson.DurationMinutes > 0)
                 {
                     <span>Duration: @Lesson.DurationMinutes minutes</span>
+                }
+                @if (!string.IsNullOrEmpty(Lesson.VideoUrl))
+                {
+                    @if (!string.IsNullOrEmpty(YouTubeVideoId))
+                    {
+                        <span class="ml-4 text-xs text-gray-500">YouTube Video</span>
+                    }
+                    else
+                    {
+                        <span class="ml-4 text-xs text-gray-500">External Video</span>
+                    }
                 }
             </div>
             
@@ -53,6 +89,8 @@
     [Parameter] public Lesson? Lesson { get; set; }
     [Parameter] public EventCallback<int> OnCompleted { get; set; }
 
+    private string YouTubeVideoId => GetYouTubeVideoId(Lesson?.VideoUrl ?? string.Empty);
+
     private async Task MarkCompleted()
     {
         if (Lesson != null)
@@ -60,4 +98,102 @@
             await OnCompleted.InvokeAsync(Lesson.Id);
         }
     }
-} 
+
+    private string GetYouTubeVideoId(string videoUrl)
+    {
+        if (string.IsNullOrEmpty(videoUrl))
+            return string.Empty;
+
+        try
+        {
+            var uri = new Uri(videoUrl);
+            
+            // Standard YouTube watch URL (youtube.com/watch?v=VIDEO_ID)
+            if (uri.Host.Contains("youtube.com") && uri.AbsolutePath == "/watch")
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            // YouTube short URL (youtu.be/VIDEO_ID)
+            if (uri.Host.Contains("youtu.be"))
+            {
+                var segments = uri.AbsolutePath.TrimStart('/').Split('?');
+                return segments.Length > 0 ? segments[0] : string.Empty;
+            }
+            
+            // YouTube embed URL (youtube.com/embed/VIDEO_ID)
+            if (uri.Host.Contains("youtube.com") && uri.AbsolutePath.StartsWith("/embed/"))
+            {
+                var videoId = uri.AbsolutePath.Replace("/embed/", "").Split('?')[0];
+                return videoId;
+            }
+            
+            // YouTube playlist URL with video (youtube.com/watch?v=VIDEO_ID&list=...)
+            if (uri.Host.Contains("youtube.com") && uri.Query.Contains("v="))
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            // YouTube mobile URL (m.youtube.com/watch?v=VIDEO_ID)
+            if (uri.Host.Contains("m.youtube.com") && uri.AbsolutePath == "/watch")
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            // YouTube URL with additional parameters (youtube.com/watch?v=VIDEO_ID&t=...)
+            if (uri.Host.Contains("youtube.com") && uri.AbsolutePath.Contains("/watch"))
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            // YouTube gaming URL (gaming.youtube.com/watch?v=VIDEO_ID)
+            if (uri.Host.Contains("gaming.youtube.com") && uri.AbsolutePath == "/watch")
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"] ?? string.Empty;
+            }
+            
+            // YouTube URL with 'si' parameter (youtu.be/VIDEO_ID?si=...)
+            if (uri.Host.Contains("youtu.be"))
+            {
+                var pathSegments = uri.AbsolutePath.TrimStart('/').Split('/');
+                return pathSegments.Length > 0 ? pathSegments[0] : string.Empty;
+            }
+            
+            return string.Empty;
+        }
+        catch
+        {
+            // Fallback: try to extract video ID using regex patterns
+            try
+            {
+                // Pattern for various YouTube URL formats
+                var patterns = new[]
+                {
+                    @"(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})",
+                    @"youtube\.com\/.*[?&]v=([a-zA-Z0-9_-]{11})",
+                    @"youtu\.be\/([a-zA-Z0-9_-]{11})"
+                };
+                
+                foreach (var pattern in patterns)
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(videoUrl, pattern);
+                    if (match.Success && match.Groups.Count > 1)
+                    {
+                        return match.Groups[1].Value;
+                    }
+                }
+            }
+            catch
+            {
+                // If all else fails, return empty string
+            }
+            
+            return string.Empty;
+        }
+    }
+}

@@ -185,53 +185,6 @@
     </div>
 
     <script src="_framework/blazor.web.js"></script>
-    <script src="js/video-player.js"></script>
-    <script>
-        // Enhanced video player with error handling - don't start Blazor manually
-        window.videoPlayerFunctions = {
-            playVideo: function(videoElement) {
-                try {
-                    if (videoElement && videoElement.play) {
-                        return videoElement.play();
-                    }
-                } catch (error) {
-                    console.error('Error playing video:', error);
-                }
-            },
-            pauseVideo: function(videoElement) {
-                try {
-                    if (videoElement && videoElement.pause) {
-                        videoElement.pause();
-                    }
-                } catch (error) {
-                    console.error('Error pausing video:', error);
-                }
-            },
-            seekVideo: function(videoElement, time) {
-                try {
-                    if (videoElement) {
-                        videoElement.currentTime = time;
-                    }
-                } catch (error) {
-                    console.error('Error seeking video:', error);
-                }
-            }
-        };
-
-        // Listen for when Blazor starts automatically (don't call Blazor.start manually)
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('✅ DOM loaded, Blazor should start automatically');
-            
-            // Wait a bit and then check if Blazor started
-            setTimeout(function() {
-                if (window.Blazor) {
-                    console.log('✅ Blazor started successfully!');
-                } else {
-                    console.error('❌ Blazor did not start within 3 seconds');
-                }
-            }, 3000);
-        });
-    </script>
 </body>
 
 </html>

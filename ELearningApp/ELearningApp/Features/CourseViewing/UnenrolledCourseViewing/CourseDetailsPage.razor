@@ -36,7 +36,7 @@
                             <span>by 
                                 <button @onclick="() => ViewInstructor(course.InstructorId)"
                                         class="font-medium text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
-                                    @course.Instructor.FirstName @course.Instructor.LastName
+                                    @course.Instructor?.FirstName @course.Instructor?.LastName
                                 </button>
                             </span>
                             <span class="flex items-center">
@@ -138,7 +138,7 @@
                                                 <button @onclick="() => ViewInstructor(relatedCourse.InstructorId)"
                                                         @onclick:stopPropagation="true"
                                                         class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
-                                                    @relatedCourse.Instructor.FirstName @relatedCourse.Instructor.LastName
+                                                    @relatedCourse.Instructor?.FirstName @relatedCourse.Instructor?.LastName
                                                 </button>
                                             </div>
                                             <p class="text-xs text-gray-500 mb-3">@relatedCourse.ShortDescription</p>
@@ -202,7 +202,7 @@
                                                 <button @onclick="() => ViewInstructor(instructorCourse.InstructorId)"
                                                         @onclick:stopPropagation="true"
                                                         class="text-sm text-primary-600 hover:text-primary-800 hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
-                                                    @instructorCourse.Instructor.FirstName @instructorCourse.Instructor.LastName
+                                                    @instructorCourse.Instructor?.FirstName @instructorCourse.Instructor?.LastName
                                                 </button>
                                             </div>
                                             <p class="text-xs text-gray-500 mb-3">@instructorCourse.ShortDescription</p>
