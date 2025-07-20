@@ -134,7 +134,7 @@ if (app.Environment.IsDevelopment())
         dbContext.Database.EnsureCreated();
         
         // Seed data
-        seeder.SeedAsync().Wait();
+        await seeder.SeedAsync();
     }
 }
 
