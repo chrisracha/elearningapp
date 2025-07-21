@@ -523,6 +523,7 @@ You can re-enroll later, but you'll need to start from the beginning.";
         showModal = true;
         modalCallback = null;
         StateHasChanged();
+        await Task.CompletedTask;
     }
 
     private async Task ShowErrorModal(string message)
@@ -535,5 +536,6 @@ You can re-enroll later, but you'll need to start from the beginning.";
         showModal = true;
         modalCallback = null;
         StateHasChanged();
+        await Task.CompletedTask;
     }
 }

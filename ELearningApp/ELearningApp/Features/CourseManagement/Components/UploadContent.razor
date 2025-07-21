@@ -204,8 +204,6 @@
     private Course? course;
     private List<Module>? modules;
     private bool isLoading = true;
-    private bool isUploading = false;
-    private int uploadProgress = 0;
 
     // Modal state
     private bool showModal = false;
@@ -457,53 +455,16 @@
 
     private async Task TriggerFileUpload()
     {
-        // Simulate file upload process
-        isUploading = true;
-        uploadProgress = 0;
-        
-        // Simulate progress
-        for (int i = 0; i <= 100; i += 10)
-        {
-            uploadProgress = i;
-            StateHasChanged();
-            await Task.Delay(200);
-        }
-        
-        isUploading = false;
         await ShowSuccessModal("File upload functionality implemented! File uploaded successfully.");
     }
 
     private async Task UploadVideo()
     {
-        // Simulate video upload
-        isUploading = true;
-        uploadProgress = 0;
-        
-        for (int i = 0; i <= 100; i += 5)
-        {
-            uploadProgress = i;
-            StateHasChanged();
-            await Task.Delay(300);
-        }
-        
-        isUploading = false;
         await ShowSuccessModal("Video upload functionality implemented! Video uploaded successfully.");
     }
 
     private async Task UploadDocument()
     {
-        // Simulate document upload
-        isUploading = true;
-        uploadProgress = 0;
-        
-        for (int i = 0; i <= 100; i += 15)
-        {
-            uploadProgress = i;
-            StateHasChanged();
-            await Task.Delay(150);
-        }
-        
-        isUploading = false;
         await ShowSuccessModal("Document upload functionality implemented! Document uploaded successfully.");
     }
 
@@ -512,7 +473,7 @@
         Navigation.NavigateTo("/instructor/courses");
     }
 
-    private async Task ShowInfoModal(string title, string message, string icon = "")
+    private Task ShowInfoModal(string title, string message, string icon = "")
     {
         modalTitle = title;
         modalMessage = message;
@@ -522,13 +483,13 @@
         showModal = true;
         modalCallback = null;
         StateHasChanged();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
-    private async Task ShowErrorModal(string message)
+    private Task ShowErrorModal(string message)
     {
-        await ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
+        return ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
     }
-    private async Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
+    private Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
     {
         modalTitle = "Success";
         modalMessage = message;
@@ -539,9 +500,9 @@
         modalCallback = null;
         modalOkCallback = okCallback;
         StateHasChanged();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
-    private async Task ShowConfirmModal(string title, string message, Func<bool, Task> callback)
+    private Task ShowConfirmModal(string title, string message, Func<bool, Task> callback)
     {
         modalTitle = title;
         modalMessage = message;
@@ -552,7 +513,7 @@
         showModal = true;
         modalCallback = callback;
         StateHasChanged();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
     private async Task OnModalClose(bool ok)
     {
@@ -587,4 +548,4 @@
             await lessonModalCallback(result.value);
         }
     }
-}}
+}

@@ -238,6 +238,8 @@
         try
         {
             isSavingPrivacy = true;
+            StateHasChanged();
+            
             // In a real app, you would save these settings to the database
             await Task.Delay(1000); // Simulate API call
             await ShowSuccessModal("Privacy settings saved successfully!");
@@ -338,4 +340,4 @@
         public bool ShareProgress { get; set; } = true;
         public bool EmailNotifications { get; set; } = true;
     }
-} 
+}
