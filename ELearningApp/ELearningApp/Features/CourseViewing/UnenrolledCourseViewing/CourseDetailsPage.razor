@@ -51,7 +51,13 @@
                                 }
                                 <span class="ml-2">(@course.ReviewCount ratings) @course.EnrollmentCount students</span>
                             </span>
-                            <span>@course.Category?.Name</span>
+                            @if (course.Category != null)
+                            {
+                                <button @onclick="() => ViewCoursesByCategory(course.CategoryId ?? 0)"
+                                        class="font-medium text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                    @course.Category.Name
+                                </button>
+                            }
                         </div>
                         
                         <div class="text-sm text-gray-500">
@@ -227,7 +233,7 @@
 
                 <!-- Sidebar -->
                 <div class="lg:col-span-1">
-                    <!-- Enrollment Card -->
+                    <!-- Enrollment/Edit Card -->
                     <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 sticky top-6">
                         <div class="text-center mb-6">
                             <div class="text-3xl font-bold text-gray-900 mb-2">
@@ -235,8 +241,20 @@
                             </div>
                         </div>
 
-                        @if (isEnrolled)
+                        @if (isInstructorOwner)
                         {
+                            <!-- Instructor View - Edit Button -->
+                            <button @onclick="@(() => Navigation.NavigateTo($"/instructor/edit-course/{course.Id}"))"
+                                    class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors mb-4">
+                                <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Edit Course
+                            </button>
+                        }
+                        else if (isEnrolled)
+                        {
+                            <!-- Student View - Already Enrolled -->
                             <button @onclick="@(() => Navigation.NavigateTo($"/course/{course.Id}/learn"))"
                                     class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors mb-4">
                                 Continue Learning
@@ -244,6 +262,7 @@
                         }
                         else
                         {
+                            <!-- Student View - Not Enrolled -->
                             <button @onclick="EnrollInCourse"
                                     class="w-full py-3 px-4 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors mb-4"
                                     disabled="@isEnrolling">
@@ -307,6 +326,7 @@
     private bool isLoading = true;
     private bool isEnrolled = false;
     private bool isEnrolling = false;
+    private bool isInstructorOwner = false;
     private CourseTab activeTab = CourseTab.Overview;
 
     private enum CourseTab
@@ -340,11 +360,12 @@
             
             if (course != null)
             {
-                // Check if user is enrolled
+                // Check if user is enrolled and if user is the instructor
                 var currentUser = await UserService.GetCurrentUserAsync();
                 if (currentUser != null)
                 {
                     isEnrolled = await CourseService.IsStudentEnrolledAsync(CourseId, currentUser.Id);
+                    isInstructorOwner = currentUser.IsInstructor && course.InstructorId == currentUser.Id;
                 }
 
                 // Load related courses and instructor courses

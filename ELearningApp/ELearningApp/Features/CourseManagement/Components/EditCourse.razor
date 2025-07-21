@@ -21,8 +21,8 @@
         
         <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div class="flex-1">
                     <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
                         <a href="/instructor/courses" class="hover:text-gray-700">Course Management</a>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,46 +33,77 @@
                     <h1 class="text-3xl font-bold text-gray-900">Edit Course</h1>
                     <p class="mt-2 text-gray-600">Update your course details and content</p>
                 </div>
-                <div class="flex items-center space-x-3">
+                
+                <!-- Action Buttons - Right Side -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     @if (course != null)
                     {
-                        <!-- Status Badge -->
-                        <span class="@GetStatusBadgeClass(course.Status) px-3 py-1 text-sm font-medium rounded-full">
-                            @course.Status.ToString()
-                        </span>
-                        
-                        <!-- Publish/Unpublish Button -->
-                        @if (course.Status == CourseStatus.Draft)
-                        {
-                            <button @onclick="PublishCourse" 
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <!-- Top Row: Status Badge and Action Buttons -->
+                        <div class="flex items-center gap-3">
+                            <!-- Status Badge -->
+                            <span class="@GetStatusBadgeClass(course.Status) px-3 py-1 text-sm font-medium rounded-full whitespace-nowrap">
+                                @course.Status.ToString()
+                            </span>
+                            
+                            <!-- Publish/Unpublish Button -->
+                            @if (course.Status == CourseStatus.Draft)
+                            {
+                                <button @onclick="PublishCourse" 
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Publish Course
+                                </button>
+                            }
+                            else if (course.Status == CourseStatus.Published)
+                            {
+                                <button @onclick="UnpublishCourse" 
+                                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 4h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17.294 15"></path>
+                                    </svg>
+                                    Unpublish
+                                </button>
+                            }
+                            
+                            <!-- Back Button -->
+                            <button @onclick="NavigateBack" 
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                                 </svg>
-                                Publish Course
+                                Back
                             </button>
-                        }
-                        else if (course.Status == CourseStatus.Published)
-                        {
-                            <button @onclick="UnpublishCourse" 
-                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 4h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17.294 15"></path>
-                                </svg>
-                                Unpublish
-                            </button>
-                        }
+                        </div>
                     }
-                    
-                    <button @onclick="NavigateBack" 
-                            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Back
-                    </button>
+                    else
+                    {
+                        <!-- Back Button when course is null -->
+                        <button @onclick="NavigateBack" 
+                                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Back
+                        </button>
+                    }
                 </div>
             </div>
+            
+            <!-- Upload Content Button - Full Width Below -->
+            @if (course != null)
+            {
+                <div class="mt-4">
+                    <button @onclick="@(() => Navigation.NavigateTo($"/instructor/upload-content/{course.Id}"))" 
+                            class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Upload Content
+                    </button>
+                </div>
+            }
         </div>
 
         @if (isLoading)
@@ -84,10 +115,10 @@
         else if (courseDto != null)
         {
             <!-- Course Statistics Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
                 <!-- Students Card -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                    <div class="p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-4 lg:p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -96,17 +127,17 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-4 flex-1">
+                            <div class="ml-4 flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-500">Students</p>
-                                <p class="text-2xl font-bold text-gray-900">@course?.EnrollmentCount.ToString("N0")</p>
+                                <p class="text-xl lg:text-2xl font-bold text-gray-900 truncate">@course?.EnrollmentCount.ToString("N0")</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Rating Card -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                    <div class="p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-4 lg:p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -115,17 +146,17 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-4 flex-1">
+                            <div class="ml-4 flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-500">Rating</p>
-                                <p class="text-2xl font-bold text-gray-900">@course?.AverageRating.ToString("F1")</p>
+                                <p class="text-xl lg:text-2xl font-bold text-gray-900 truncate">@course?.AverageRating.ToString("F1")</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Views Card -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                    <div class="p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-4 lg:p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -135,17 +166,17 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-4 flex-1">
+                            <div class="ml-4 flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-500">Views</p>
-                                <p class="text-2xl font-bold text-gray-900">@course?.ViewCount.ToString("N0")</p>
+                                <p class="text-xl lg:text-2xl font-bold text-gray-900 truncate">@course?.ViewCount.ToString("N0")</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Revenue Card -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
-                    <div class="p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-4 lg:p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -154,9 +185,9 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-4 flex-1">
+                            <div class="ml-4 flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-500">Revenue</p>
-                                <p class="text-lg font-semibold text-gray-600">Free Course</p>
+                                <p class="text-lg font-semibold text-gray-600 truncate">Free Course</p>
                             </div>
                         </div>
                     </div>
@@ -164,18 +195,18 @@
             </div>
 
             <!-- Course Edit Form -->
-            <div class="bg-white shadow rounded-lg">
+            <div class="bg-white shadow-sm rounded-lg border border-gray-200">
                 <EditForm Model="courseDto" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
                     
-                    <div class="px-6 py-8">
-                        <div class="grid grid-cols-1 gap-6">
+                    <div class="px-4 sm:px-6 py-6 lg:py-8">
+                        <div class="space-y-8">
                             
                             <!-- Basic Information Section -->
-                            <div class="border-b border-gray-200 pb-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                            <div class="border-b border-gray-200 pb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-6">Basic Information</h3>
                                 
-                                <div class="grid grid-cols-1 gap-6">
+                                <div class="space-y-6">
                                     <!-- Course Title -->
                                     <div>
                                         <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
@@ -183,7 +214,7 @@
                                         </label>
                                         <InputText @bind-Value="courseDto.Title" 
                                                    id="title"
-                                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                                    placeholder="Enter course title" />
                                         <ValidationMessage For="@(() => courseDto.Title)" class="text-red-600 text-sm mt-1" />
                                     </div>
@@ -196,7 +227,7 @@
                                         <InputTextArea @bind-Value="courseDto.ShortDescription" 
                                                        id="shortDescription"
                                                        rows="3"
-                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
                                                        placeholder="Brief description of your course" />
                                         <ValidationMessage For="@(() => courseDto.ShortDescription)" class="text-red-600 text-sm mt-1" />
                                     </div>
@@ -209,7 +240,7 @@
                                         <InputTextArea @bind-Value="courseDto.LongDescription" 
                                                        id="longDescription"
                                                        rows="6"
-                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
                                                        placeholder="Detailed description of what students will learn" />
                                         <ValidationMessage For="@(() => courseDto.LongDescription)" class="text-red-600 text-sm mt-1" />
                                     </div>
@@ -217,10 +248,10 @@
                             </div>
 
                             <!-- Course Details Section -->
-                            <div class="border-b border-gray-200 pb-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Course Details</h3>
+                            <div class="border-b border-gray-200 pb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-6">Course Details</h3>
                                 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <!-- Category -->
                                     <div>
                                         <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
@@ -228,7 +259,7 @@
                                         </label>
                                         <InputSelect @bind-Value="courseDto.CategoryId" 
                                                      id="category"
-                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                             <option value="0">Select a category</option>
                                             @if (categories != null)
                                             {
@@ -248,7 +279,7 @@
                                         </label>
                                         <InputSelect @bind-Value="courseDto.Level" 
                                                      id="level"
-                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                             <option value="@CourseLevel.Beginner">Beginner</option>
                                             <option value="@CourseLevel.Intermediate">Intermediate</option>
                                             <option value="@CourseLevel.Advanced">Advanced</option>
@@ -258,19 +289,21 @@
                                     </div>
 
                                     <!-- Duration -->
-                                    <div>
+                                    <div class="lg:col-span-2">
                                         <label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
                                             Estimated Duration (minutes) <span class="text-red-500">*</span>
                                         </label>
-                                        <InputNumber @bind-Value="courseDto.EstimatedDurationMinutes" 
-                                                     id="duration"
-                                                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                                     placeholder="e.g., 300 (5 hours)" />
+                                        <div class="max-w-md">
+                                            <InputNumber @bind-Value="courseDto.EstimatedDurationMinutes" 
+                                                         id="duration"
+                                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                         placeholder="e.g., 300 (5 hours)" />
+                                        </div>
                                         <ValidationMessage For="@(() => courseDto.EstimatedDurationMinutes)" class="text-red-600 text-sm mt-1" />
                                         @if (courseDto.EstimatedDurationMinutes > 0)
                                         {
                                             <p class="text-sm text-gray-500 mt-1">
-                                                Duration: @courseDto.EstimatedDurationMinutes minutes
+                                                Duration: @TimeSpan.FromMinutes(courseDto.EstimatedDurationMinutes).ToString(@"h\h\ m\m")
                                             </p>
                                         }
                                     </div>
@@ -278,21 +311,19 @@
                             </div>
 
                             <!-- YouTube Videos Section -->
-                            <div class="border-b border-gray-200 pb-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">YouTube Videos</h3>
+                            <div class="border-b border-gray-200 pb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-6">YouTube Videos</h3>
                                 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <!-- YouTube Video ID -->
                                     <div>
                                         <label for="youtubeVideoId" class="block text-sm font-medium text-gray-700 mb-2">
                                             YouTube Video ID
                                         </label>
-                                        <div class="relative">
-                                            <InputText @bind-Value="courseDto.YouTubeVideoId"
-                                                       id="youtubeVideoId"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                                                       placeholder="e.g., dQw4w9WgXcQ" />
-                                        </div>
+                                        <InputText @bind-Value="courseDto.YouTubeVideoId"
+                                                   id="youtubeVideoId"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                   placeholder="e.g., dQw4w9WgXcQ" />
                                         <p class="text-sm text-gray-500 mt-1">Enter the YouTube video ID for the main course content</p>
                                     </div>
 
@@ -301,22 +332,20 @@
                                         <label for="youtubePreviewVideoId" class="block text-sm font-medium text-gray-700 mb-2">
                                             YouTube Preview Video ID
                                         </label>
-                                        <div class="relative">
-                                            <InputText @bind-Value="courseDto.YouTubePreviewVideoId"
-                                                       id="youtubePreviewVideoId"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                                                       placeholder="e.g., jNQXAC9IVRw" />
-                                        </div>
+                                        <InputText @bind-Value="courseDto.YouTubePreviewVideoId"
+                                                   id="youtubePreviewVideoId"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                   placeholder="e.g., jNQXAC9IVRw" />
                                         <p class="text-sm text-gray-500 mt-1">Enter the YouTube video ID for course preview (optional)</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Course Media Section -->
-                            <div class="border-b border-gray-200 pb-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Course Media</h3>
+                            <div class="border-b border-gray-200 pb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-6">Course Media</h3>
                                 
-                                <div class="grid grid-cols-1 gap-6">
+                                <div>
                                     <!-- Course Image -->
                                     <div>
                                         <label for="imageUrl" class="block text-sm font-medium text-gray-700 mb-2">
@@ -324,27 +353,25 @@
                                         </label>
                                         <InputText @bind-Value="courseDto.ImageUrl" 
                                                    id="imageUrl"
-                                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                                    placeholder="https://example.com/course-image.jpg" />
                                         <ValidationMessage For="@(() => courseDto.ImageUrl)" class="text-red-600 text-sm mt-1" />
                                         
                                         @if (!string.IsNullOrEmpty(courseDto.ImageUrl))
                                         {
                                             <div class="mt-4">
-                                                <img src="@courseDto.ImageUrl" alt="Course preview" class="h-32 w-48 object-cover rounded-md border" />
+                                                <img src="@courseDto.ImageUrl" alt="Course preview" class="h-32 w-48 object-cover rounded-md border shadow-sm" />
                                             </div>
                                         }
                                     </div>
-
-                                    <!-- Preview Video -->
                                 </div>
                             </div>
 
                             <!-- Additional Information Section -->
-                            <div class="pb-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-6">Additional Information</h3>
                                 
-                                <div class="grid grid-cols-1 gap-6">
+                                <div class="space-y-6">
                                     <!-- Prerequisites -->
                                     <div>
                                         <label for="prerequisites" class="block text-sm font-medium text-gray-700 mb-2">
@@ -353,7 +380,7 @@
                                         <InputTextArea @bind-Value="courseDto.Prerequisites" 
                                                        id="prerequisites"
                                                        rows="3"
-                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
                                                        placeholder="What should students know before taking this course?" />
                                         <ValidationMessage For="@(() => courseDto.Prerequisites)" class="text-red-600 text-sm mt-1" />
                                     </div>
@@ -366,7 +393,7 @@
                                         <InputTextArea @bind-Value="courseDto.WhatYouWillLearn" 
                                                        id="learningOutcomes"
                                                        rows="4"
-                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
                                                        placeholder="List the key learning outcomes and skills students will gain" />
                                         <ValidationMessage For="@(() => courseDto.WhatYouWillLearn)" class="text-red-600 text-sm mt-1" />
                                     </div>
@@ -376,30 +403,28 @@
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                    <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
                         <button type="button" @onclick="NavigateBack"
-                                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                             Cancel
                         </button>
                         
-                        <div class="flex space-x-3">
-                            <button type="submit" 
-                                    disabled="@isSubmitting"
-                                    class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                                @if (isSubmitting)
-                                {
-                                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span>Updating...</span>
-                                }
-                                else
-                                {
-                                    <span>Update Course</span>
-                                }
-                            </button>
-                        </div>
+                        <button type="submit" 
+                                disabled="@isSubmitting"
+                                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            @if (isSubmitting)
+                            {
+                                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Updating...</span>
+                            }
+                            else
+                            {
+                                <span>Update Course</span>
+                            }
+                        </button>
                     </div>
                 </EditForm>
             </div>
@@ -631,4 +656,4 @@
             await cb();
         }
     }
-} 
+}
