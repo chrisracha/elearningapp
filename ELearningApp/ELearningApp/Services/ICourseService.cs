@@ -37,8 +37,9 @@ namespace ELearningApp.Services
             CourseLevel? level = null,
             double? minRating = null,
             int pageNumber = 1,
-            int pageSize = 12
+            int pageSize = 9
         );
+        Task<int> GetFilteredCoursesCountAsync(int? categoryId = null, CourseLevel? level = null, double? minRating = null);
 
         // Course Statistics
         Task<int> GetTotalCoursesCountAsync();

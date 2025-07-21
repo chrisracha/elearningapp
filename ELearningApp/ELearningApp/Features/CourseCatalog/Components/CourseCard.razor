@@ -4,10 +4,11 @@
 
 @if (Course != null)
 {
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+         @onclick="@(() => NavigateToCourse("Course Card"))">
         
         <!-- Course Image -->
-        <div class="relative h-48 bg-gray-200 cursor-pointer" @onclick="OnImageClick">
+        <div class="relative h-48 bg-gray-200">
             @if (!string.IsNullOrEmpty(Course.ImageUrl))
             {
                 <img src="@Course.ImageUrl" alt="@GetSafeTitle()" class="w-full h-full object-cover" 
@@ -30,9 +31,8 @@
 
         <!-- Course Content -->
         <div class="p-6">
-            <!-- Course Title - Clickable -->
-            <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-primary-600 transition-colors" 
-                @onclick="OnTitleClick">
+            <!-- Course Title -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                 @GetSafeTitle()
             </h3>
             
@@ -90,16 +90,9 @@
                 <span class="text-primary-600 font-medium">@GetSafeCategoryName()</span>
             </div>
 
-            <!-- Price and Action -->
-            <div class="flex items-center justify-between">
-                <div class="text-left">
-                    <span class="text-2xl font-bold text-green-600">Free</span>
-                </div>
-                <button @onclick="OnViewDetailsClick"
-                        @onclick:stopPropagation="true"
-                        class="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    View Details
-                </button>
+            <!-- Price only (removed View Details button) -->
+            <div class="flex items-center justify-center">
+                <span class="text-2xl font-bold text-green-600">Free</span>
             </div>
         </div>
     </div>
@@ -115,21 +108,6 @@ else
     [Parameter] public Course Course { get; set; } = null!;
     [Parameter] public EventCallback<Course> OnCourseSelected { get; set; }
 
-    private void OnViewDetailsClick()
-    {
-        NavigateToCourse("View Details Button");
-    }
-
-    private void OnImageClick()
-    {
-        NavigateToCourse("Course Image");
-    }
-
-    private void OnTitleClick()
-    {
-        NavigateToCourse("Course Title");
-    }
-
     private void OnInstructorClick()
     {
         try
@@ -142,12 +120,12 @@ else
             }
             else
             {
-                Console.WriteLine($"?? CourseCard: Invalid instructor ID: {Course?.InstructorId}");
+                Console.WriteLine($"? CourseCard: Invalid instructor ID: {Course?.InstructorId}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"?? CourseCard: Error in instructor navigation: {ex.Message}");
+            Console.WriteLine($"? CourseCard: Error in instructor navigation: {ex.Message}");
         }
     }
 
@@ -159,17 +137,16 @@ else
             
             if (Course?.Id > 0)
             {
-                // Use direct navigation to avoid the home page "blink"
                 Navigation.NavigateTo($"/course/{Course.Id}");
             }
             else
             {
-                Console.WriteLine($"?? CourseCard: Invalid course ID: {Course?.Id}");
+                Console.WriteLine($"? CourseCard: Invalid course ID: {Course?.Id}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"?? CourseCard: Error in {source} navigation: {ex.Message}");
+            Console.WriteLine($"? CourseCard: Error in {source} navigation: {ex.Message}");
             Console.WriteLine($"?? CourseCard: Stack: {ex.StackTrace}");
         }
     }
@@ -210,7 +187,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"?? CourseCard: Error getting instructor name: {ex.Message}");
+            Console.WriteLine($"? CourseCard: Error getting instructor name: {ex.Message}");
             return "Instructor Error";
         }
     }
@@ -227,7 +204,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"?? CourseCard: Error getting duration: {ex.Message}");
+            Console.WriteLine($"? CourseCard: Error getting duration: {ex.Message}");
             return "Duration Error";
         }
     }

@@ -417,7 +417,7 @@ namespace ELearningApp.Services
         }
 
         public async Task<IEnumerable<Course>> FilterCoursesAsync(int? categoryId = null, CourseLevel? level = null, 
-            double? minRating = null, int pageNumber = 1, int pageSize = 12)
+            double? minRating = null, int pageNumber = 1, int pageSize = 9)
         {
             try
             {
@@ -445,6 +445,31 @@ namespace ELearningApp.Services
             {
                 _logger.LogError(ex, "Error filtering courses");
                 return Enumerable.Empty<Course>();
+            }
+        }
+
+        public async Task<int> GetFilteredCoursesCountAsync(int? categoryId = null, CourseLevel? level = null, double? minRating = null)
+        {
+            try
+            {
+                var query = _context.Courses
+                    .Where(c => c.Status == CourseStatus.Published);
+
+                if (categoryId.HasValue)
+                    query = query.Where(c => c.CategoryId == categoryId.Value);
+
+                if (level.HasValue)
+                    query = query.Where(c => c.Level == level.Value);
+
+                if (minRating.HasValue)
+                    query = query.Where(c => c.AverageRating >= minRating.Value);
+
+                return await query.CountAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting filtered courses count");
+                return 0;
             }
         }
 

@@ -40,6 +40,15 @@ public class StaticDataService
             new Category
             {
                 Id = 4,
+                Name = "Programming",
+                Description = "Master programming languages and frameworks",
+                IconUrl = "terminal",
+                Color = "bg-indigo-50",
+                CourseCount = 203
+            },
+            new Category
+            {
+                Id = 5,
                 Name = "Language Learning",
                 Description = "Learn new languages with native speaker instructors",
                 IconUrl = "language",
@@ -48,7 +57,7 @@ public class StaticDataService
             },
             new Category
             {
-                Id = 5,
+                Id = 6,
                 Name = "Data Science",
                 Description = "Master data analysis and machine learning",
                 IconUrl = "chart-bar",
@@ -57,7 +66,7 @@ public class StaticDataService
             },
             new Category
             {
-                Id = 6,
+                Id = 7,
                 Name = "Data Analytics",
                 Description = "Turn data into actionable business insights",
                 IconUrl = "chart-pie",
@@ -229,4 +238,4 @@ public class StaticDataService
             }
         };
     }
-} 
+}

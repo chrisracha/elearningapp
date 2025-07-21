@@ -314,11 +314,11 @@
             Console.WriteLine($"Home: Loaded {categories.Count} categories");
             
             Console.WriteLine("Home: Loading courses from service");
-            var realCourses = await CourseService.GetAllCoursesAsync();
-            Console.WriteLine($"Home: Retrieved {realCourses.Count()} courses from service");
+            var realCourses = await CourseService.GetPublishedCoursesAsync(); // Changed from GetAllCoursesAsync
+            Console.WriteLine($"Home: Retrieved {realCourses.Count()} published courses from service");
             
             Console.WriteLine("Home: Mapping courses to DTOs");
-            topCourses = realCourses.Take(6).Select(c => {
+            topCourses = realCourses.Take(3).Select(c => {
                 try 
                 {
                     Console.WriteLine($"Home: Mapping course {c.Id}: {c.Title}");

@@ -112,7 +112,16 @@
                     @if (relatedCourses.Any())
                     {
                         <div class="mb-8">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">Get more from @course.Category?.Name</h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">
+                                Get more from 
+                                @if (course.Category != null)
+                                {
+                                    <button @onclick="() => ViewCoursesByCategory(course.CategoryId ?? 0)"
+                                            class="text-primary-600 hover:text-primary-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 rounded px-1">
+                                        @course.Category.Name
+                                    </button>
+                                }
+                            </h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 @foreach (var relatedCourse in relatedCourses.Take(3))
                                 {
@@ -430,6 +439,21 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Instructor navigation error: {ex.Message}");
+        }
+    }
+
+    private void ViewCoursesByCategory(int categoryId)
+    {
+        try
+        {
+            if (categoryId > 0)
+            {
+                Navigation.NavigateTo($"/courses?category={categoryId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Category navigation error: {ex.Message}");
         }
     }
 

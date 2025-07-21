@@ -39,6 +39,10 @@
                             <a href="/instructor/courses" class="@GetNavLinkClasses("/instructor/courses") font-medium transition-colors">
                                 Manage
                             </a>
+                            <!-- Add My Learning for instructors too, as they can enroll in other courses -->
+                            <a href="/dashboard" class="@GetNavLinkClasses("/dashboard") font-medium transition-colors">
+                                My Learning
+                            </a>
                         }
                         else
                         {
@@ -128,6 +132,10 @@
                             {
                                 <a href="/instructor/courses" class="block px-3 py-2 text-base font-medium @GetMobileNavLinkClasses("/instructor/courses") hover:bg-gray-50 rounded-md">
                                     Manage
+                                </a>
+                                <!-- Add My Learning for instructors too -->
+                                <a href="/dashboard" class="block px-3 py-2 text-base font-medium @GetMobileNavLinkClasses("/dashboard") hover:bg-gray-50 rounded-md">
+                                    My Learning
                                 </a>
                             }
                             else

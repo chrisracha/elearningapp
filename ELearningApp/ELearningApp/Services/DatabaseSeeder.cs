@@ -110,7 +110,15 @@ namespace ELearningApp.Services
                 new Category { Name = "Programming", Description = "Master programming languages and frameworks", IconUrl = "terminal", Color = "bg-indigo-50", CourseCount = 203 }
             };
 
-            _context.Categories.AddRange(categories);
+            foreach (var category in categories)
+            {
+                var existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Name == category.Name);
+                if (existingCategory == null)
+                {
+                    _context.Categories.Add(category);
+                }
+            }
+            
             await _context.SaveChangesAsync();
         }
 

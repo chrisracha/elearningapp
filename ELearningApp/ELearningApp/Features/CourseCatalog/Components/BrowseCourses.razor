@@ -253,7 +253,7 @@
 
     // Pagination
     private int currentPage = 1;
-    private int pageSize = 12;
+    private int pageSize = 9;  // Changed from 12 to 9 courses per page
     private int totalPages = 1;
 
     protected override async Task OnInitializedAsync()
@@ -275,18 +275,48 @@
         await LoadData();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Only use JS interop after the component has rendered
+            try
+            {
+                await JS.InvokeVoidAsync("console.log", $"?? Loaded {allCourses.Count} published courses");
+                if (allCourses.Any())
+                {
+                    var courseDetails = allCourses.Take(3).Select(c => $"{c.Title} (Status: {c.Status}, Category: {c.Category?.Name ?? "No Category"})");
+                    await JS.InvokeVoidAsync("console.log", $"?? Sample courses: {string.Join(", ", courseDetails)}");
+                }
+                await JS.InvokeVoidAsync("console.log", $"??? Loaded {categories.Count} categories: {string.Join(", ", categories.Select(c => c.Name))}");
+            }
+            catch (Exception ex)
+            {
+                // If JS interop fails, fall back to console logging
+                Console.WriteLine($"JS logging failed: {ex.Message}");
+            }
+        }
+    }
+
     private async Task LoadData()
     {
         try
         {
             isLoading = true;
-            allCourses = (await CourseService.GetPublishedCoursesAsync()).ToList();
+            
+            // Get all published courses
+            var publishedCourses = await CourseService.GetPublishedCoursesAsync();
+            allCourses = publishedCourses.ToList();
+            
+            // Load categories from static data
             categories = StaticDataService.GetCategories().ToList();
+            
             await FilterCourses();
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("console.error", "Error loading courses:", ex.Message);
+            // Only log to console, don't use JS interop here during prerendering
+            Console.WriteLine($"Error loading courses: {ex.Message}");
         }
         finally
         {
