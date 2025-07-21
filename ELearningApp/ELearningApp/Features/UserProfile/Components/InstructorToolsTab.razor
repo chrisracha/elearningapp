@@ -1,8 +1,11 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Services
+@using ELearningApp.Features.Shared
 @inject ICourseService CourseService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
 
 <div class="space-y-6">
     <!-- Instructor Stats -->
@@ -257,6 +260,16 @@
     private InstructorStats instructorStats = new();
     private List<Course> recentCourses = new();
 
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+
     protected override async Task OnInitializedAsync()
     {
         if (User != null)
@@ -289,37 +302,60 @@
 
     private async Task ShowAnalytics()
     {
-        await JS.InvokeVoidAsync("alert", "Analytics dashboard will be implemented in Phase 2");
+        await ShowInfoModal("Coming Soon", "Analytics dashboard will be implemented in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowEarnings()
     {
-        await JS.InvokeVoidAsync("alert", "Earnings dashboard will be implemented in Phase 2");
+        await ShowInfoModal("Coming Soon", "Earnings dashboard will be implemented in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowStudents()
     {
-        await JS.InvokeVoidAsync("alert", "Student management will be implemented in Phase 2");
+        await ShowInfoModal("Coming Soon", "Student management will be implemented in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowSettings()
     {
-        await JS.InvokeVoidAsync("alert", "Instructor settings will be implemented in Phase 2");
+        await ShowInfoModal("Coming Soon", "Instructor settings will be implemented in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowInstructorGuide()
     {
-        await JS.InvokeVoidAsync("alert", "Instructor guide will be available in Phase 2");
+        await ShowInfoModal("Coming Soon", "Instructor guide will be available in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowBestPractices()
     {
-        await JS.InvokeVoidAsync("alert", "Best practices guide will be available in Phase 2");
+        await ShowInfoModal("Coming Soon", "Best practices guide will be available in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowCommunity()
     {
-        await JS.InvokeVoidAsync("alert", "Instructor community will be launched in Phase 2");
+        await ShowInfoModal("Coming Soon", "Instructor community will be launched in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
+    }
+
+    private Task ShowInfoModal(string title, string message, string icon = "")
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = icon;
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
+        }
     }
 
     private class InstructorStats

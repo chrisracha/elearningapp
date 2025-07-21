@@ -1,7 +1,10 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Services
+@using ELearningApp.Features.Shared
 @inject IUserService UserService
 @inject IJSRuntime JS
+
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
 
 <div class="space-y-6">
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -183,6 +186,16 @@
     private ValidationErrors validationErrors = new();
     private bool isSaving = false;
 
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+
     protected override void OnParametersSet()
     {
         if (User != null)
@@ -237,17 +250,17 @@
             
             if (success)
             {
-                await JS.InvokeVoidAsync("alert", "Profile updated successfully!");
+                await ShowSuccessModal("Profile updated successfully!");
                 await OnProfileUpdated.InvokeAsync();
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to update profile. Please try again.");
+                await ShowErrorModal("Failed to update profile. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error updating profile: {ex.Message}");
+            await ShowErrorModal($"Error updating profile: {ex.Message}");
         }
         finally
         {
@@ -261,6 +274,42 @@
         OnParametersSet();
         validationErrors = new ValidationErrors();
         StateHasChanged();
+    }
+
+    private Task ShowSuccessModal(string message)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ShowErrorModal(string message)
+    {
+        modalTitle = "Error";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
+        }
     }
 
     private class ProfileData

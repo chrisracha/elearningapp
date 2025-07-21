@@ -1,8 +1,11 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Services
+@using ELearningApp.Features.Shared
 @inject IUserService UserService
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
 
 <div class="space-y-6">
     <!-- Account Information -->
@@ -209,6 +212,16 @@
     private PrivacySettings privacySettings = new();
     private bool isSavingPrivacy = false;
 
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+
     protected override void OnParametersSet()
     {
         // Initialize privacy settings (these would come from user preferences in a real app)
@@ -227,11 +240,11 @@
             isSavingPrivacy = true;
             // In a real app, you would save these settings to the database
             await Task.Delay(1000); // Simulate API call
-            await JS.InvokeVoidAsync("alert", "Privacy settings saved successfully!");
+            await ShowSuccessModal("Privacy settings saved successfully!");
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error saving privacy settings: {ex.Message}");
+            await ShowErrorModal($"Error saving privacy settings: {ex.Message}");
         }
         finally
         {
@@ -242,17 +255,80 @@
 
     private async Task ShowPasswordStrength()
     {
-        await JS.InvokeVoidAsync("alert", "Password Tips:\n\n• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid common words and patterns\n• Don't reuse passwords from other sites");
+        await ShowInfoModal("Password Tips", "• Use at least 8 characters\n• Include uppercase and lowercase letters\n• Add numbers and special characters\n• Avoid common words and patterns\n• Don't reuse passwords from other sites", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
     }
 
     private async Task ShowDeleteAccountDialog()
     {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", 
-            "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.");
-        
-        if (confirmed)
+        await ShowConfirmModal("Delete Account", "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.", async (confirmed) =>
         {
-            Navigation.NavigateTo("/Account/Manage/DeletePersonalData");
+            if (confirmed)
+            {
+                Navigation.NavigateTo("/Account/Manage/DeletePersonalData");
+            }
+        });
+    }
+
+    private Task ShowSuccessModal(string message)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ShowErrorModal(string message)
+    {
+        modalTitle = "Error";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ShowInfoModal(string title, string message, string icon = "")
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = icon;
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ShowConfirmModal(string title, string message, Func<bool, Task> callback)
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "Yes";
+        modalCancelText = "No";
+        modalShowCancel = true;
+        modalIcon = "<svg class='w-6 h-6 text-yellow-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>";
+        showModal = true;
+        modalCallback = callback;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
         }
     }
 

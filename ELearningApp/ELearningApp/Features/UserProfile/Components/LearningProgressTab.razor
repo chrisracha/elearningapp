@@ -1,6 +1,9 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.Enums
+@using ELearningApp.Features.Shared
 @inject IJSRuntime JS
+
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
 
 <div class="space-y-6">
     <!-- Progress Overview -->
@@ -223,8 +226,41 @@
 @code {
     [Parameter] public List<Enrollment> Enrollments { get; set; } = new();
 
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+
     private async Task ViewCertificate(int courseId)
     {
-        await JS.InvokeVoidAsync("alert", "Certificate viewing will be implemented in Phase 2");
+        await ShowInfoModal("Coming Soon", "Certificate viewing will be implemented in Phase 2", "<svg class='w-6 h-6 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>");
+    }
+
+    private Task ShowInfoModal(string title, string message, string icon = "")
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = icon;
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
+        }
     }
 } 
