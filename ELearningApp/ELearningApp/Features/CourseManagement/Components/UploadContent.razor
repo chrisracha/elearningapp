@@ -4,6 +4,7 @@
 @using ELearningApp.Models.Enums
 @using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
+@using ELearningApp.Features.Shared
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
 @inject NavigationManager Navigation
@@ -181,73 +182,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Upload Panel -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white shadow rounded-lg sticky top-8">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h2 class="text-lg font-medium text-gray-900">Quick Upload</h2>
-                        </div>
-                        
-                        <div class="p-6 space-y-4">
-                            <!-- File Upload Area -->
-                            <div class="border-2 border-gray-300 border-dashed rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                                 @onclick="TriggerFileUpload">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <div class="mt-4">
-                                    <p class="text-sm text-gray-600">
-                                        <span class="font-medium text-blue-600 hover:text-blue-500">Click to upload</span>
-                                        or drag and drop
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-1">MP4, PDF, DOCX up to 100MB</p>
-                                </div>
-                            </div>
-
-                            <!-- Upload Progress -->
-                            @if (isUploading)
-                            {
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: @(uploadProgress)%"></div>
-                                </div>
-                                <p class="text-sm text-gray-600 text-center">Uploading... @uploadProgress%</p>
-                            }
-
-                            <!-- Upload Actions -->
-                            <div class="space-y-3">
-                                <button @onclick="UploadVideo"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                    </svg>
-                                    Upload Video
-                                </button>
-
-                                <button @onclick="UploadDocument"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    Upload Document
-                                </button>
-
-
-                            </div>
-
-                            <!-- Upload Tips -->
-                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                                <h4 class="text-sm font-medium text-blue-900 mb-2">Upload Tips</h4>
-                                <ul class="text-xs text-blue-700 space-y-1">
-                                    <li>• Keep video files under 100MB for faster loading</li>
-                                    <li>• Use clear, descriptive file names</li>
-                                    <li>• Organize content into logical modules</li>
-                                    <li>• Test uploads before publishing</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         }
         else
@@ -260,6 +194,10 @@
     </div>
 </div>
 
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
+<TailwindInputModal Show="@showInputModal" Title="@inputModalTitle" Label="@inputModalLabel" Placeholder="@inputModalPlaceholder" InitialValue="@inputModalInitialValue" OkText="@inputModalOkText" CancelText="@inputModalCancelText" OnClose="OnInputModalClose" />
+<TailwindLessonModal Show="@showLessonModal" Title="@lessonModalTitle" OkText="@lessonModalOkText" CancelText="@lessonModalCancelText" OnClose="OnLessonModalClose" />
+
 @code {
     [Parameter] public int CourseId { get; set; }
     
@@ -268,6 +206,35 @@
     private bool isLoading = true;
     private bool isUploading = false;
     private int uploadProgress = 0;
+
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+    private Func<Task>? modalOkCallback;
+
+    // Input modal state
+    private bool showInputModal = false;
+    private string inputModalTitle = "";
+    private string inputModalLabel = "";
+    private string inputModalPlaceholder = "";
+    private string inputModalInitialValue = "";
+    private string inputModalOkText = "OK";
+    private string inputModalCancelText = "Cancel";
+    private Func<string, Task>? inputModalCallback;
+
+    // Lesson modal state
+    private bool showLessonModal = false;
+    private string lessonModalTitle = "";
+    private string lessonModalOkText = "OK";
+    private string lessonModalCancelText = "Cancel";
+    private TailwindLessonModal.LessonModalResult? lessonModalInitialValue;
+    private Func<TailwindLessonModal.LessonModalResult, Task>? lessonModalCallback;
 
     protected override async Task OnInitializedAsync()
     {
@@ -299,164 +266,193 @@
 
     private async Task AddModule()
     {
-        var title = await JS.InvokeAsync<string>("prompt", "Enter module title:");
-        if (!string.IsNullOrWhiteSpace(title))
+        inputModalTitle = "Add Module";
+        inputModalLabel = "Module Title";
+        inputModalPlaceholder = "Enter module title";
+        inputModalInitialValue = "";
+        inputModalOkText = "Add";
+        inputModalCancelText = "Cancel";
+        inputModalCallback = async (title) =>
         {
-            try
+            if (!string.IsNullOrWhiteSpace(title))
             {
-                var newModule = new Module
+                try
                 {
-                    Title = title,
-                    Description = $"Module: {title}",
-                    CourseId = CourseId,
-                    OrderIndex = modules?.Count + 1 ?? 1
-                };
-
-                // Add to database through service
-                await CourseService.CreateModuleAsync(newModule);
-                
-                // Reload course to get updated modules
-                await LoadCourse();
-                
-                await JS.InvokeVoidAsync("alert", $"Module '{title}' created successfully!");
+                    var newModule = new Module
+                    {
+                        Title = title,
+                        Description = $"Module: {title}",
+                        CourseId = CourseId,
+                        OrderIndex = modules?.Count + 1 ?? 1
+                    };
+                    await CourseService.CreateModuleAsync(newModule);
+                    await LoadCourse();
+                    await ShowSuccessModal($"Module '{title}' created successfully!");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorModal($"Error creating module: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error creating module: {ex.Message}");
-            }
-        }
+        };
+        showInputModal = true;
+        StateHasChanged();
     }
 
     private async Task EditModule(int moduleId)
     {
         var module = modules?.FirstOrDefault(m => m.Id == moduleId);
         if (module == null) return;
-
-        var newTitle = await JS.InvokeAsync<string>("prompt", "Enter new module title:", module.Title);
-        if (!string.IsNullOrWhiteSpace(newTitle) && newTitle != module.Title)
+        inputModalTitle = "Edit Module";
+        inputModalLabel = "Module Title";
+        inputModalPlaceholder = "Enter new module title";
+        inputModalInitialValue = module.Title;
+        inputModalOkText = "Save";
+        inputModalCancelText = "Cancel";
+        inputModalCallback = async (newTitle) =>
         {
-            try
+            if (!string.IsNullOrWhiteSpace(newTitle) && newTitle != module.Title)
             {
-                module.Title = newTitle;
-                await CourseService.UpdateModuleAsync(module);
-                
-                // Reload course to get updated modules
-                await LoadCourse();
-                
-                await JS.InvokeVoidAsync("alert", "Module updated successfully!");
+                try
+                {
+                    module.Title = newTitle;
+                    await CourseService.UpdateModuleAsync(module);
+                    await LoadCourse();
+                    await ShowSuccessModal("Module updated successfully!");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorModal($"Error updating module: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error updating module: {ex.Message}");
-            }
-        }
+        };
+        showInputModal = true;
+        StateHasChanged();
     }
 
     private async Task DeleteModule(int moduleId)
     {
-        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this module and all its lessons?"))
+        await ShowConfirmModal("Delete Module", "Are you sure you want to delete this module and all its lessons?", async (confirmed) =>
         {
-            try
+            if (confirmed)
             {
-                await CourseService.DeleteModuleAsync(moduleId);
-                
-                // Reload course to get updated modules
-                await LoadCourse();
-                
-                await JS.InvokeVoidAsync("alert", "Module deleted successfully!");
+                try
+                {
+                    await CourseService.DeleteModuleAsync(moduleId);
+                    // Reload course to get updated modules
+                    await LoadCourse();
+                    await ShowSuccessModal("Module deleted successfully!");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorModal($"Error deleting module: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error deleting module: {ex.Message}");
-            }
-        }
+        });
     }
 
     private async Task AddLesson(int moduleId)
     {
-        var module = modules?.FirstOrDefault(m => m.Id == moduleId);
-        if (module == null) return;
-
-        var title = await JS.InvokeAsync<string>("prompt", "Enter lesson title:");
-        if (!string.IsNullOrWhiteSpace(title))
+        lessonModalTitle = "Add Lesson";
+        lessonModalOkText = "Add";
+        lessonModalCancelText = "Cancel";
+        lessonModalInitialValue = null;
+        lessonModalCallback = async (result) =>
         {
-            try
+            if (!string.IsNullOrWhiteSpace(result.Title))
             {
-                var lessonType = await JS.InvokeAsync<string>("prompt", "Enter lesson type (Video/Article/ExternalLink):", "Video");
-                var duration = await JS.InvokeAsync<string>("prompt", "Enter duration in minutes:", "10");
-                
-                var newLesson = new Lesson
+                try
                 {
-                    Title = title,
-                    Description = $"Lesson: {title}",
-                    Content = $"Content for {title}",
-                    Type = Enum.TryParse<LessonType>(lessonType, true, out var type) ? type : LessonType.Video,
-                    ModuleId = moduleId,
-                    OrderIndex = module.Lessons?.Count + 1 ?? 1,
-                    DurationMinutes = int.TryParse(duration, out var dur) ? dur : 10,
-                    IsFree = true,
-                    VideoUrl = "",
-                    ArticleUrl = "",
-                    DownloadUrl = ""
-                };
-
-                await CourseService.CreateLessonAsync(newLesson);
-                
-                // Reload course to get updated modules
-                await LoadCourse();
-                
-                await JS.InvokeVoidAsync("alert", $"Lesson '{title}' created successfully!");
+                    var module = modules?.FirstOrDefault(m => m.Id == moduleId);
+                    var newLesson = new Lesson
+                    {
+                        Title = result.Title,
+                        Description = $"Lesson: {result.Title}",
+                        Content = $"Content for {result.Title}",
+                        Type = Enum.TryParse<LessonType>(result.Type, true, out var type) ? type : LessonType.Video,
+                        ModuleId = moduleId,
+                        OrderIndex = module?.Lessons?.Count + 1 ?? 1,
+                        DurationMinutes = result.Duration,
+                        IsFree = true,
+                        VideoUrl = result.VideoUrl,
+                        ArticleUrl = result.ArticleUrl,
+                        DownloadUrl = result.ExternalLink
+                    };
+                    await CourseService.CreateLessonAsync(newLesson);
+                    await LoadCourse();
+                    await ShowSuccessModal($"Lesson '{result.Title}' created successfully!");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorModal($"Error creating lesson: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error creating lesson: {ex.Message}");
-            }
-        }
+        };
+        showLessonModal = true;
+        StateHasChanged();
     }
 
     private async Task EditLesson(int lessonId)
     {
         var lesson = modules?.SelectMany(m => m.Lessons ?? Enumerable.Empty<Lesson>()).FirstOrDefault(l => l.Id == lessonId);
         if (lesson == null) return;
-
-        var newTitle = await JS.InvokeAsync<string>("prompt", "Enter new lesson title:", lesson.Title);
-        if (!string.IsNullOrWhiteSpace(newTitle) && newTitle != lesson.Title)
+        lessonModalTitle = "Edit Lesson";
+        lessonModalOkText = "Save";
+        lessonModalCancelText = "Cancel";
+        lessonModalInitialValue = new TailwindLessonModal.LessonModalResult
         {
-            try
+            Title = lesson.Title,
+            Type = lesson.Type.ToString(),
+            Duration = lesson.DurationMinutes,
+            VideoUrl = lesson.VideoUrl ?? "",
+            ArticleUrl = lesson.ArticleUrl ?? "",
+            ExternalLink = lesson.DownloadUrl ?? ""
+        };
+        lessonModalCallback = async (result) =>
+        {
+            if (!string.IsNullOrWhiteSpace(result.Title) && result.Title != lesson.Title)
             {
-                lesson.Title = newTitle;
-                await CourseService.UpdateLessonAsync(lesson);
-                
-                // Reload course to get updated modules
-                await LoadCourse();
-                
-                await JS.InvokeVoidAsync("alert", "Lesson updated successfully!");
+                try
+                {
+                    lesson.Title = result.Title;
+                    lesson.Type = Enum.TryParse<LessonType>(result.Type, true, out var type) ? type : LessonType.Video;
+                    lesson.DurationMinutes = result.Duration;
+                    lesson.VideoUrl = result.VideoUrl;
+                    lesson.ArticleUrl = result.ArticleUrl;
+                    lesson.DownloadUrl = result.ExternalLink;
+                    await CourseService.UpdateLessonAsync(lesson);
+                    await LoadCourse();
+                    await ShowSuccessModal("Lesson updated successfully!");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorModal($"Error updating lesson: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error updating lesson: {ex.Message}");
-            }
-        }
+        };
+        showLessonModal = true;
+        StateHasChanged();
     }
 
     private async Task DeleteLesson(int lessonId)
     {
-        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this lesson?"))
+        await ShowConfirmModal("Delete Lesson", "Are you sure you want to delete this lesson?", async (confirmed) =>
         {
-            try
+            if (confirmed)
             {
-                await CourseService.DeleteLessonAsync(lessonId);
-                
-                // Reload course to get updated modules
-                await LoadCourse();
-                
-                await JS.InvokeVoidAsync("alert", "Lesson deleted successfully!");
+                try
+                {
+                    await CourseService.DeleteLessonAsync(lessonId);
+                    // Reload course to get updated modules
+                    await LoadCourse();
+                    await ShowSuccessModal("Lesson deleted successfully!");
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorModal($"Error deleting lesson: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                await JS.InvokeVoidAsync("alert", $"Error deleting lesson: {ex.Message}");
-            }
-        }
+        });
     }
 
     private async Task TriggerFileUpload()
@@ -514,5 +510,81 @@
     private void NavigateBack()
     {
         Navigation.NavigateTo("/instructor/courses");
+    }
+
+    private Task ShowInfoModal(string title, string message, string icon = "")
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = icon;
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private Task ShowErrorModal(string message)
+    {
+        return ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
+    }
+    private Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        modalOkCallback = okCallback;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private Task ShowConfirmModal(string title, string message, Func<bool, Task> callback)
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "Yes";
+        modalCancelText = "No";
+        modalShowCancel = true;
+        modalIcon = "<svg class='w-6 h-6 text-yellow-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>";
+        showModal = true;
+        modalCallback = callback;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
+        }
+        else if (ok && modalOkCallback != null)
+        {
+            var cb = modalOkCallback;
+            modalOkCallback = null;
+            await cb();
+        }
+    }
+    private async Task OnInputModalClose((bool ok, string value) result)
+    {
+        showInputModal = false;
+        StateHasChanged();
+        if (result.ok && inputModalCallback != null)
+        {
+            await inputModalCallback(result.value);
+        }
+    }
+    private async Task OnLessonModalClose((bool ok, TailwindLessonModal.LessonModalResult value) result)
+    {
+        showLessonModal = false;
+        StateHasChanged();
+        if (result.ok && lessonModalCallback != null)
+        {
+            await lessonModalCallback(result.value);
+        }
     }
 } 

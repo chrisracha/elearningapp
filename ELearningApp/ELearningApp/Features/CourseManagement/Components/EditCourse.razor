@@ -5,6 +5,7 @@
 @using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using ELearningApp.Features.Shared
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
 @inject IUserService UserService
@@ -413,6 +414,8 @@
     </div>
 </div>
 
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
+
 @code {
     [Parameter] public int CourseId { get; set; }
     
@@ -421,6 +424,17 @@
     private List<Category>? categories;
     private bool isLoading = true;
     private bool isSubmitting = false;
+
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+    private Func<Task>? modalOkCallback;
 
     protected override async Task OnInitializedAsync()
     {
@@ -490,12 +504,13 @@
             // Save course
             await CourseService.UpdateCourseAsync(course!);
 
-            await JS.InvokeVoidAsync("alert", "Course updated successfully!");
-            Navigation.NavigateTo("/instructor/courses");
+            await ShowSuccessModal("Course updated successfully!", async () => {
+                Navigation.NavigateTo("/instructor/courses");
+            });
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error updating course: {ex.Message}");
+            await ShowErrorModal($"Error updating course: {ex.Message}");
         }
         finally
         {
@@ -514,16 +529,18 @@
             if (success)
             {
                 await LoadCourse();
-                await JS.InvokeVoidAsync("alert", "Course published successfully!");
+                await ShowSuccessModal("Course published successfully!", async () => {
+                    Navigation.NavigateTo("/instructor/courses");
+                });
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to publish course.");
+                await ShowErrorModal("Failed to publish course.");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error publishing course: {ex.Message}");
+            await ShowErrorModal($"Error publishing course: {ex.Message}");
         }
     }
 
@@ -537,16 +554,18 @@
             if (success)
             {
                 await LoadCourse();
-                await JS.InvokeVoidAsync("alert", "Course unpublished successfully!");
+                await ShowSuccessModal("Course unpublished successfully!", async () => {
+                    Navigation.NavigateTo("/instructor/courses");
+                });
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to unpublish course.");
+                await ShowErrorModal("Failed to unpublish course.");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error unpublishing course: {ex.Message}");
+            await ShowErrorModal($"Error unpublishing course: {ex.Message}");
         }
     }
 
@@ -565,5 +584,51 @@
     private void NavigateBack()
     {
         Navigation.NavigateTo("/instructor/courses");
+    }
+
+    private Task ShowInfoModal(string title, string message, string icon = "")
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = icon;
+        showModal = true;
+        modalCallback = null;
+        modalOkCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private Task ShowErrorModal(string message)
+    {
+        return ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
+    }
+    private Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        modalOkCallback = okCallback;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
+        }
+        else if (ok && modalOkCallback != null)
+        {
+            var cb = modalOkCallback;
+            modalOkCallback = null;
+            await cb();
+        }
     }
 } 

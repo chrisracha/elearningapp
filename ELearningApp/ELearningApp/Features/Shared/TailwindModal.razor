@@ -1,0 +1,59 @@
+@* TailwindModal.razor: A reusable modal dialog for info, success, error, and confirmation, with optional loading spinner *@
+
+@if (Show)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center" style="background: rgba(0,0,0,0.3);">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative animate-fade-in">
+            <div class="flex items-center mb-4">
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <span class="mr-3">@((MarkupString)Icon)</span>
+                }
+                <h3 class="text-lg font-semibold text-gray-900">@Title</h3>
+            </div>
+            <div class="mb-6 text-gray-700 whitespace-pre-line">@Message</div>
+            @if (IsLoading)
+            {
+                <div class="flex justify-center items-center py-4">
+                    <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                </div>
+            }
+            <div class="flex justify-end space-x-2">
+                @if (ShowCancel)
+                {
+                    <button class="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" @onclick="OnCancelClicked" disabled="@IsLoading">@CancelText</button>
+                }
+                <button class="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" @onclick="OnOkClicked" disabled="@IsLoading">@OkText</button>
+            </div>
+            <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" @onclick="OnCancelClicked" disabled="@IsLoading">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public bool ShowCancel { get; set; } = false;
+    [Parameter] public string Icon { get; set; } = "";
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+
+    private async Task OnOkClicked()
+    {
+        if (!IsLoading)
+            await OnClose.InvokeAsync(true);
+    }
+    private async Task OnCancelClicked()
+    {
+        if (!IsLoading)
+            await OnClose.InvokeAsync(false);
+    }
+} 

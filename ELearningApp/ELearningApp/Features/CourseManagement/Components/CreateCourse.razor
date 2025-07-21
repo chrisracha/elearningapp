@@ -5,6 +5,7 @@
 @using ELearningApp.Services
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using ELearningApp.Features.Shared
 @attribute [Authorize(Policy = "InstructorOnly")]
 @inject ICourseService CourseService
 @inject IUserService UserService
@@ -278,10 +279,23 @@
     </div>
 </div>
 
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
+
 @code {
     private CourseCreateDto courseDto = new();
     private List<Category>? categories;
     private bool isSubmitting = false;
+
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+    private Func<Task>? modalOkCallback;
 
     protected override Task OnInitializedAsync()
     {
@@ -301,7 +315,7 @@
             var currentUser = await UserService.GetCurrentUserAsync();
             if (currentUser == null)
             {
-                await JS.InvokeVoidAsync("alert", "Unable to identify current user.");
+                await ShowErrorModal("Unable to identify current user.");
                 return;
             }
 
@@ -326,12 +340,13 @@
             // Save course
             await CourseService.CreateCourseAsync(course);
 
-            await JS.InvokeVoidAsync("alert", "Course created successfully!");
-            Navigation.NavigateTo("/instructor/courses");
+            await ShowSuccessModal("Course created successfully!", async () => {
+                Navigation.NavigateTo("/instructor/courses");
+            });
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error creating course: {ex.Message}");
+            await ShowErrorModal($"Error creating course: {ex.Message}");
         }
         finally
         {
@@ -343,5 +358,50 @@
     private void NavigateBack()
     {
         Navigation.NavigateTo("/instructor/courses");
+    }
+
+    private Task ShowInfoModal(string title, string message, string icon = "")
+    {
+        modalTitle = title;
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = icon;
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private Task ShowErrorModal(string message)
+    {
+        return ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
+    }
+    private Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        modalOkCallback = okCallback;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
+        }
+        else if (ok && modalOkCallback != null)
+        {
+            var cb = modalOkCallback;
+            modalOkCallback = null;
+            await cb();
+        }
     }
 } 

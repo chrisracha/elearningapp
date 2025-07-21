@@ -1,0 +1,133 @@
+@* TailwindLessonModal.razor: A reusable modal for lesson creation/editing *@
+@if (Show)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center" style="background: rgba(0,0,0,0.3);">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative animate-fade-in">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">@Title</h3>
+            </div>
+            <div class="mb-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lesson Title</label>
+                    <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                           @bind="LessonTitle" @bind:event="oninput" placeholder="Enter lesson title" />
+                    @if (!string.IsNullOrEmpty(TitleError))
+                    {
+                        <div class="text-red-500 text-xs mt-1">@TitleError</div>
+                    }
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lesson Type</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" @bind="LessonType">
+                        <option value="Video">Video</option>
+                        <option value="Article">Article</option>
+                        <option value="ExternalLink">External Link</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                    <input type="number" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" @bind="Duration" />
+                </div>
+                @if (LessonType == "Video")
+                {
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Video URL</label>
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" @bind="VideoUrl" placeholder="Enter video URL (optional)" />
+                    </div>
+                }
+                @if (LessonType == "Article")
+                {
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Article URL</label>
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" @bind="ArticleUrl" placeholder="Enter article URL (optional)" />
+                    </div>
+                }
+                @if (LessonType == "ExternalLink")
+                {
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">External Link</label>
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" @bind="ExternalLink" placeholder="Enter external link (optional)" />
+                    </div>
+                }
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button class="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" @onclick="OnCancel">@CancelText</button>
+                <button class="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" @onclick="OnOk">@OkText</button>
+            </div>
+            <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" @onclick="OnCancel">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public EventCallback<(bool, LessonModalResult)> OnClose { get; set; }
+    [Parameter] public LessonModalResult? InitialValue { get; set; }
+
+    private string LessonTitle = "";
+    private string LessonType = "Video";
+    private int Duration = 10;
+    private string VideoUrl = "";
+    private string ArticleUrl = "";
+    private string ExternalLink = "";
+    private string TitleError = "";
+
+    protected override void OnParametersSet()
+    {
+        if (InitialValue != null)
+        {
+            LessonTitle = InitialValue.Title;
+            LessonType = InitialValue.Type;
+            Duration = InitialValue.Duration;
+            VideoUrl = InitialValue.VideoUrl;
+            ArticleUrl = InitialValue.ArticleUrl;
+            ExternalLink = InitialValue.ExternalLink;
+        }
+        else
+        {
+            LessonTitle = "";
+            LessonType = "Video";
+            Duration = 10;
+            VideoUrl = "";
+            ArticleUrl = "";
+            ExternalLink = "";
+        }
+        TitleError = "";
+    }
+
+    private async Task OnOk()
+    {
+        TitleError = string.IsNullOrWhiteSpace(LessonTitle) ? "Title is required." : "";
+        if (!string.IsNullOrEmpty(TitleError))
+            return;
+        var result = new LessonModalResult
+        {
+            Title = LessonTitle,
+            Type = LessonType,
+            Duration = Duration,
+            VideoUrl = VideoUrl,
+            ArticleUrl = ArticleUrl,
+            ExternalLink = ExternalLink
+        };
+        await OnClose.InvokeAsync((true, result));
+    }
+    private async Task OnCancel()
+    {
+        await OnClose.InvokeAsync((false, InitialValue ?? new LessonModalResult()));
+    }
+
+    public class LessonModalResult
+    {
+        public string Title { get; set; } = "";
+        public string Type { get; set; } = "Video";
+        public int Duration { get; set; } = 10;
+        public string VideoUrl { get; set; } = "";
+        public string ArticleUrl { get; set; } = "";
+        public string ExternalLink { get; set; } = "";
+    }
+} 
