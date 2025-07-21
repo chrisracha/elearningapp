@@ -512,7 +512,7 @@
         Navigation.NavigateTo("/instructor/courses");
     }
 
-    private Task ShowInfoModal(string title, string message, string icon = "")
+    private async Task ShowInfoModal(string title, string message, string icon = "")
     {
         modalTitle = title;
         modalMessage = message;
@@ -522,13 +522,13 @@
         showModal = true;
         modalCallback = null;
         StateHasChanged();
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
-    private Task ShowErrorModal(string message)
+    private async Task ShowErrorModal(string message)
     {
-        return ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
+        await ShowInfoModal("Error", message, "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>");
     }
-    private Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
+    private async Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
     {
         modalTitle = "Success";
         modalMessage = message;
@@ -539,9 +539,9 @@
         modalCallback = null;
         modalOkCallback = okCallback;
         StateHasChanged();
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
-    private Task ShowConfirmModal(string title, string message, Func<bool, Task> callback)
+    private async Task ShowConfirmModal(string title, string message, Func<bool, Task> callback)
     {
         modalTitle = title;
         modalMessage = message;
@@ -552,7 +552,7 @@
         showModal = true;
         modalCallback = callback;
         StateHasChanged();
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
     private async Task OnModalClose(bool ok)
     {
@@ -587,4 +587,4 @@
             await lessonModalCallback(result.value);
         }
     }
-} 
+}}
