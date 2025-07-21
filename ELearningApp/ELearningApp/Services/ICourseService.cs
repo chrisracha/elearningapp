@@ -18,6 +18,18 @@ namespace ELearningApp.Services
         Task<Course> UpdateCourseAsync(Course course);
         Task<bool> DeleteCourseAsync(int id);
 
+        // Module Management
+        Task<Module> CreateModuleAsync(Module module);
+        Task<Module> UpdateModuleAsync(Module module);
+        Task<bool> DeleteModuleAsync(int moduleId);
+        Task<Module?> GetModuleByIdAsync(int moduleId);
+
+        // Lesson Management
+        Task<Lesson> CreateLessonAsync(Lesson lesson);
+        Task<Lesson> UpdateLessonAsync(Lesson lesson);
+        Task<bool> DeleteLessonAsync(int lessonId);
+        Task<Lesson?> GetLessonByIdAsync(int lessonId);
+
         // Course Search and Filtering
         Task<IEnumerable<Course>> SearchCoursesAsync(string searchTerm);
         Task<IEnumerable<Course>> FilterCoursesAsync(

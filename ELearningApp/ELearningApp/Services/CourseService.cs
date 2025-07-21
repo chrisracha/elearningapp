@@ -768,20 +768,58 @@ namespace ELearningApp.Services
             }
         }
 
-        public Task<bool> UpdateLessonProgressAsync(int lessonId, string studentId, bool isCompleted)
+        public async Task<bool> UpdateLessonProgressAsync(int lessonId, string studentId, bool isCompleted)
         {
             try
             {
-                // TODO: Implement lesson progress tracking
-                // This will be implemented in Phase 2
-                _logger.LogInformation("Lesson progress update requested for lesson {LessonId}, student {StudentId}, completed: {IsCompleted}", 
+                // First, get the enrollment for this student and course
+                var enrollment = await _context.Enrollments
+                    .Include(e => e.Course)
+                    .ThenInclude(c => c.Modules)
+                    .ThenInclude(m => m.Lessons)
+                    .FirstOrDefaultAsync(e => e.UserId == studentId && 
+                        e.Course.Modules.Any(m => m.Lessons.Any(l => l.Id == lessonId)));
+                
+                if (enrollment == null)
+                {
+                    _logger.LogWarning("No enrollment found for student {StudentId} and lesson {LessonId}", studentId, lessonId);
+                    return false;
+                }
+
+                var progress = await _context.LessonProgress
+                    .FirstOrDefaultAsync(lp => lp.LessonId == lessonId && lp.EnrollmentId == enrollment.Id);
+
+                if (progress == null)
+                {
+                    progress = new LessonProgress
+                    {
+                        LessonId = lessonId,
+                        EnrollmentId = enrollment.Id,
+                        IsCompleted = isCompleted,
+                        CompletedAt = isCompleted ? DateTime.UtcNow : null,
+                        LastAccessedAt = DateTime.UtcNow,
+                        ProgressPercentage = isCompleted ? 100.0 : 0.0
+                    };
+                    _context.LessonProgress.Add(progress);
+                }
+                else
+                {
+                    progress.IsCompleted = isCompleted;
+                    progress.CompletedAt = isCompleted ? DateTime.UtcNow : progress.CompletedAt;
+                    progress.LastAccessedAt = DateTime.UtcNow;
+                    progress.ProgressPercentage = isCompleted ? 100.0 : progress.ProgressPercentage;
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Updated lesson progress for lesson {LessonId}, student {StudentId}, completed: {IsCompleted}", 
                     lessonId, studentId, isCompleted);
-                return Task.FromResult(true);
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating lesson progress for lesson {LessonId}, student {StudentId}", lessonId, studentId);
-                return Task.FromResult(false);
+                return false;
             }
         }
 
@@ -790,19 +828,28 @@ namespace ELearningApp.Services
             return UpdateLessonProgressAsync(lessonId, studentId, true);
         }
 
-        public Task<IEnumerable<LessonProgress>> GetStudentProgressAsync(string studentId)
+        public async Task<IEnumerable<LessonProgress>> GetStudentProgressAsync(string studentId)
         {
             try
             {
-                // TODO: Implement lesson progress retrieval
-                // This will be implemented in Phase 2
-                _logger.LogInformation("Student progress requested for student {StudentId}", studentId);
-                return Task.FromResult(Enumerable.Empty<LessonProgress>());
+                var progress = await _context.LessonProgress
+                    .Include(lp => lp.Enrollment)
+                    .ThenInclude(e => e.Course)
+                    .Include(lp => lp.Lesson)
+                    .ThenInclude(l => l.Module)
+                    .Where(lp => lp.Enrollment.UserId == studentId)
+                    .OrderBy(lp => lp.Lesson.Module.OrderIndex)
+                    .ThenBy(lp => lp.Lesson.OrderIndex)
+                    .ToListAsync();
+
+                _logger.LogInformation("Retrieved {ProgressCount} progress records for student {StudentId}", 
+                    progress.Count, studentId);
+                return progress;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting student progress for student {StudentId}", studentId);
-                return Task.FromResult(Enumerable.Empty<LessonProgress>());
+                return Enumerable.Empty<LessonProgress>();
             }
         }
 
@@ -858,6 +905,200 @@ namespace ELearningApp.Services
             {
                 _logger.LogError(ex, "Error getting average rating for course {CourseId}", courseId);
                 return 0;
+            }
+        }
+
+        #endregion
+
+        #region Module Management
+
+        public async Task<Module> CreateModuleAsync(Module module)
+        {
+            try
+            {
+                // Set default values
+                module.CreatedAt = DateTime.UtcNow;
+                module.UpdatedAt = DateTime.UtcNow;
+
+                _context.Modules.Add(module);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Created module {ModuleId} for course {CourseId}", 
+                    module.Id, module.CourseId);
+                return module;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating module for course {CourseId}", module.CourseId);
+                throw;
+            }
+        }
+
+        public async Task<Module> UpdateModuleAsync(Module module)
+        {
+            try
+            {
+                var existing = await _context.Modules.FindAsync(module.Id);
+                if (existing == null)
+                    throw new ArgumentException("Module not found");
+
+                existing.Title = module.Title;
+                existing.Description = module.Description;
+                existing.OrderIndex = module.OrderIndex;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Updated module {ModuleId}", module.Id);
+                return existing;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating module {ModuleId}", module.Id);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteModuleAsync(int moduleId)
+        {
+            try
+            {
+                var module = await _context.Modules
+                    .Include(m => m.Lessons)
+                    .FirstOrDefaultAsync(m => m.Id == moduleId);
+
+                if (module == null)
+                    return false;
+
+                // Delete all lessons in the module first
+                if (module.Lessons?.Any() == true)
+                {
+                    _context.Lessons.RemoveRange(module.Lessons);
+                }
+
+                _context.Modules.Remove(module);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Deleted module {ModuleId} and its lessons", moduleId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting module {ModuleId}", moduleId);
+                return false;
+            }
+        }
+
+        public async Task<Module?> GetModuleByIdAsync(int moduleId)
+        {
+            try
+            {
+                var module = await _context.Modules
+                    .Include(m => m.Lessons)
+                    .FirstOrDefaultAsync(m => m.Id == moduleId);
+
+                return module;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting module {ModuleId}", moduleId);
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region Lesson Management
+
+        public async Task<Lesson> CreateLessonAsync(Lesson lesson)
+        {
+            try
+            {
+                // Set default values
+                lesson.CreatedAt = DateTime.UtcNow;
+                lesson.UpdatedAt = DateTime.UtcNow;
+
+                _context.Lessons.Add(lesson);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Created lesson {LessonId} for module {ModuleId}", 
+                    lesson.Id, lesson.ModuleId);
+                return lesson;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating lesson for module {ModuleId}", lesson.ModuleId);
+                throw;
+            }
+        }
+
+        public async Task<Lesson> UpdateLessonAsync(Lesson lesson)
+        {
+            try
+            {
+                var existing = await _context.Lessons.FindAsync(lesson.Id);
+                if (existing == null)
+                    throw new ArgumentException("Lesson not found");
+
+                existing.Title = lesson.Title;
+                existing.Description = lesson.Description;
+                existing.Content = lesson.Content;
+                existing.Type = lesson.Type;
+                existing.OrderIndex = lesson.OrderIndex;
+                existing.DurationMinutes = lesson.DurationMinutes;
+                existing.IsFree = lesson.IsFree;
+                existing.VideoUrl = lesson.VideoUrl;
+                existing.ArticleUrl = lesson.ArticleUrl;
+                existing.DownloadUrl = lesson.DownloadUrl;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Updated lesson {LessonId}", lesson.Id);
+                return existing;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating lesson {LessonId}", lesson.Id);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteLessonAsync(int lessonId)
+        {
+            try
+            {
+                var lesson = await _context.Lessons.FindAsync(lessonId);
+                if (lesson == null)
+                    return false;
+
+                _context.Lessons.Remove(lesson);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Deleted lesson {LessonId}", lessonId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting lesson {LessonId}", lessonId);
+                return false;
+            }
+        }
+
+        public async Task<Lesson?> GetLessonByIdAsync(int lessonId)
+        {
+            try
+            {
+                var lesson = await _context.Lessons
+                    .Include(l => l.Module)
+                    .FirstOrDefaultAsync(l => l.Id == lessonId);
+
+                return lesson;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting lesson {LessonId}", lessonId);
+                return null;
             }
         }
 
