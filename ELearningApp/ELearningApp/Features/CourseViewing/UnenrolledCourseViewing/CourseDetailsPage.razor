@@ -4,6 +4,7 @@
 @using ELearningApp.Models.Enums
 @using ELearningApp.Services
 @using ELearningApp.Features.CourseViewing.Shared
+@using ELearningApp.Features.Shared
 @inject ICourseService CourseService
 @inject IUserService UserService
 @inject StaticDataService StaticDataService
@@ -12,6 +13,8 @@
 @rendermode InteractiveServer
 
 <PageTitle>@(course?.Title ?? "Loading...") - E-Learning Platform</PageTitle>
+
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
 
 <div class="min-h-screen bg-white">
     @if (isLoading)
@@ -313,6 +316,16 @@
         Contents
     }
 
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadCourseData();
@@ -419,17 +432,19 @@
             if (success)
             {
                 isEnrolled = true;
-                await JS.InvokeVoidAsync("alert", "Successfully enrolled! You can now access the course content.");
-                Navigation.NavigateTo($"/course/{CourseId}/learn");
+                await ShowSuccessModal("Successfully enrolled! You can now access the course content.", async () =>
+                {
+                    Navigation.NavigateTo($"/course/{CourseId}/learn");
+                });
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Failed to enroll in course. Please try again.");
+                await ShowErrorModal("Failed to enroll in course. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Error enrolling in course: {ex.Message}");
+            await ShowErrorModal($"Error enrolling in course: {ex.Message}");
         }
         finally
         {
@@ -447,6 +462,42 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Navigation error: {ex.Message}");
+        }
+    }
+
+    private Task ShowSuccessModal(string message, Func<Task>? okCallback = null)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = okCallback != null ? async (ok) => { if (ok) await okCallback(); } : null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ShowErrorModal(string message)
+    {
+        modalTitle = "Error";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
         }
     }
 }

@@ -3,6 +3,7 @@
 @using ELearningApp.Models.DTOs
 @using ELearningApp.Models.Enums
 @using ELearningApp.Services
+@using ELearningApp.Features.Shared
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject ICourseService CourseService
@@ -12,6 +13,8 @@
 @rendermode InteractiveServer
 
 <PageTitle>@(course?.Title ?? "Loading...") - E-Learning Platform</PageTitle>
+
+<TailwindModal Show="@showModal" Title="@modalTitle" Message="@modalMessage" OkText="@modalOkText" CancelText="@modalCancelText" ShowCancel="@modalShowCancel" Icon="@modalIcon" OnClose="OnModalClose" />
 
 <div class="min-h-screen bg-gray-50">
     @if (isLoading)
@@ -277,6 +280,16 @@
         Reviews
     }
 
+    // Modal state
+    private bool showModal = false;
+    private string modalTitle = "";
+    private string modalMessage = "";
+    private string modalOkText = "OK";
+    private string modalCancelText = "Cancel";
+    private bool modalShowCancel = false;
+    private string modalIcon = "";
+    private Func<bool, Task>? modalCallback;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadCourseData();
@@ -365,7 +378,30 @@
     {
         if (progressPercentage >= 100)
         {
-            await JS.InvokeVoidAsync("alert", "🎉 Congratulations! Certificate generation will be implemented in Phase 2");
+            await ShowSuccessModal("🎉 Congratulations! Certificate generation will be implemented in Phase 2");
+        }
+    }
+
+    private Task ShowSuccessModal(string message)
+    {
+        modalTitle = "Success";
+        modalMessage = message;
+        modalOkText = "OK";
+        modalShowCancel = false;
+        modalIcon = "<svg class='w-6 h-6 text-green-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>";
+        showModal = true;
+        modalCallback = null;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task OnModalClose(bool ok)
+    {
+        showModal = false;
+        StateHasChanged();
+        if (modalCallback != null)
+        {
+            await modalCallback(ok);
         }
     }
 }
