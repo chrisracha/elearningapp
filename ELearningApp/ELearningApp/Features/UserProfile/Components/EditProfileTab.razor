@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <form @onsubmit="SaveProfile" class="space-y-6">
+    <form @onsubmit="SaveProfile" @onsubmit:preventDefault="true" class="space-y-6">
         <!-- Basic Information -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
@@ -217,11 +217,17 @@
 
     private async Task SaveProfile()
     {
-        if (User == null) return;
+        if (User == null) 
+        {
+            await ShowErrorModal("User not found. Please refresh the page and try again.");
+            return;
+        }
 
         try
         {
             isSaving = true;
+            StateHasChanged();
+            
             validationErrors = new ValidationErrors();
 
             // Validate required fields
@@ -236,6 +242,15 @@
                 return;
             }
 
+            // Log the values being updated
+            await JS.InvokeVoidAsync("console.log", "Updating profile:", new { 
+                UserId = User.Id,
+                FirstName = profileData.FirstName?.Trim(),
+                LastName = profileData.LastName?.Trim(),
+                Bio = profileData.Bio?.Trim(),
+                CompanyName = profileData.CompanyName?.Trim()
+            });
+
             // Update user data
             User.FirstName = profileData.FirstName.Trim();
             User.LastName = profileData.LastName.Trim();
@@ -248,6 +263,8 @@
 
             var success = await UserService.UpdateUserAsync(User);
             
+            await JS.InvokeVoidAsync("console.log", "Update result:", success);
+            
             if (success)
             {
                 await ShowSuccessModal("Profile updated successfully!");
@@ -255,11 +272,12 @@
             }
             else
             {
-                await ShowErrorModal("Failed to update profile. Please try again.");
+                await ShowErrorModal("Failed to update profile. Please check the console for more details and try again.");
             }
         }
         catch (Exception ex)
         {
+            await JS.InvokeVoidAsync("console.error", "Profile update error:", ex.Message);
             await ShowErrorModal($"Error updating profile: {ex.Message}");
         }
         finally
@@ -333,4 +351,4 @@
 
         public bool HasErrors() => !string.IsNullOrEmpty(FirstName) || !string.IsNullOrEmpty(LastName) || !string.IsNullOrEmpty(Email);
     }
-} 
+}
