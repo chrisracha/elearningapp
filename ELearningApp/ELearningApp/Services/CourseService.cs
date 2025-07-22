@@ -134,11 +134,39 @@ namespace ELearningApp.Services
         {
             try
             {
+                _logger.LogInformation("Starting course creation for: {Title}", course.Title);
+                
+                // Ensure required fields are set
                 course.CreatedAt = DateTime.UtcNow;
                 course.UpdatedAt = DateTime.UtcNow;
                 course.Status = CourseStatus.Draft;
+                course.IsPublished = false;
 
+                // Validate that InstructorId is not empty
+                if (string.IsNullOrEmpty(course.InstructorId))
+                {
+                    throw new ArgumentException("InstructorId is required");
+                }
+
+                _logger.LogInformation("Validating instructor exists: {InstructorId}", course.InstructorId);
+
+                // Check if the instructor exists
+                var instructor = await _context.Users.FindAsync(course.InstructorId);
+                if (instructor == null)
+                {
+                    throw new ArgumentException($"Instructor with ID {course.InstructorId} not found");
+                }
+
+                _logger.LogInformation("Instructor found: {InstructorName}", instructor.UserName);
+
+                // Clear navigation properties to prevent EF tracking issues
+                course.Instructor = null!;
+                course.Category = null;
+
+                _logger.LogInformation("Adding course to context");
                 _context.Courses.Add(course);
+                
+                _logger.LogInformation("Saving changes to database");
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Created new course with ID {CourseId}", course.Id);
@@ -146,7 +174,20 @@ namespace ELearningApp.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating course");
+                _logger.LogError(ex, "Error creating course. Course data: Title: {Title}, InstructorId: {InstructorId}, CategoryId: {CategoryId}, Duration: {Duration}", 
+                    course.Title, 
+                    course.InstructorId, 
+                    course.CategoryId, 
+                    course.EstimatedDurationMinutes);
+                
+                // Log the inner exception details
+                var innerEx = ex.InnerException;
+                while (innerEx != null)
+                {
+                    _logger.LogError("Inner exception: {Message}", innerEx.Message);
+                    innerEx = innerEx.InnerException;
+                }
+                
                 throw;
             }
         }

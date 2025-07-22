@@ -492,11 +492,29 @@
         {
             Console.WriteLine($"Processing lesson completion for lesson ID: {lessonId}");
             
-            // Show a success message
-            await ShowSuccessModal("🎉 Lesson completed! Your progress has been updated.");
+            // Get current user
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (currentUser == null)
+            {
+                await ShowErrorModal("Unable to identify current user.");
+                return;
+            }
+
+            // Mark lesson as completed via the CourseService
+            var success = await CourseService.MarkLessonCompletedAsync(lessonId, currentUser.Id);
             
-            // Refresh course data to update progress
-            await LoadCourseData();
+            if (success)
+            {
+                // Show a success message
+                await ShowSuccessModal("🎉 Lesson completed! Your progress has been updated.");
+                
+                // Refresh course data to update progress
+                await LoadCourseData();
+            }
+            else
+            {
+                await ShowErrorModal("Failed to mark lesson as complete. Please try again.");
+            }
             
             Console.WriteLine("Lesson completion processed successfully");
         }

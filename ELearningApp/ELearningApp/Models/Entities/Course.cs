@@ -39,7 +39,8 @@ namespace ELearningApp.Models.Entities
         public int? CategoryId { get; set; }
         public virtual Category? Category { get; set; }
         
-        // Instructor
+        // Instructor - Fixed foreign key relationship
+        [Required]
         [ForeignKey("Instructor")]
         public string InstructorId { get; set; } = string.Empty;
         public virtual ApplicationUser Instructor { get; set; } = null!;

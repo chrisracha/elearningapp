@@ -26,7 +26,7 @@ namespace ELearningApp.Models.DTOs
         [StringLength(50, ErrorMessage = "YouTube Preview Video ID cannot exceed 50 characters")]
         public string? YouTubePreviewVideoId { get; set; }
 
-        [Required(ErrorMessage = "Category is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a category")]
         public int CategoryId { get; set; }
 
         [Required(ErrorMessage = "Course level is required")]
@@ -86,4 +86,4 @@ namespace ELearningApp.Models.DTOs
         public int TotalStudents { get; set; }
         public double AverageRating { get; set; }
     }
-} 
+}

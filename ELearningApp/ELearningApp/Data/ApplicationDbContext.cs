@@ -22,18 +22,21 @@ namespace ELearningApp.Data
         {
             base.OnModelCreating(builder);
 
-            // Configure Course relationships
-            builder.Entity<Course>()
-                .HasOne(c => c.Instructor)
-                .WithMany()
-                .HasForeignKey(c => c.InstructorId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Configure Course relationships properly
+            builder.Entity<Course>(entity =>
+            {
+                // Configure the instructor relationship
+                entity.HasOne(c => c.Instructor)
+                      .WithMany()
+                      .HasForeignKey(c => c.InstructorId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<Course>()
-                .HasOne(c => c.Category)
-                .WithMany(cat => cat.Courses)
-                .HasForeignKey(c => c.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                // Configure the category relationship
+                entity.HasOne(c => c.Category)
+                      .WithMany(cat => cat.Courses)
+                      .HasForeignKey(c => c.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // Configure Module relationships
             builder.Entity<Module>()
