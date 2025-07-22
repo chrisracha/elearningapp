@@ -1,5 +1,12 @@
 ﻿# ELearning App - Project Documentation
 
+CREDENTIALS:
+Student - sign-up 
+- student@example.com // Password123!
+Instructor
+- blazor.instructor@example.com // Password123!
+- new.instructor@example.com // Password123!
+
 ## 📋 Project Overview
 
 The ELearning App is a comprehensive online learning platform built with **Blazor WebAssembly** and **.NET 9**. It provides a modern, interactive learning experience with both server-side and client-side rendering capabilities, designed to deliver scalable educational content to users worldwide.
