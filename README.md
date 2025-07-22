@@ -1,6 +1,6 @@
 ﻿# ELearning App
 
-<img width="1850" height="920" alt="image" src="https://github.com/user-attachments/assets/ca24a2da-681e-423d-8dd6-e8ef5a631add" />
+<img width="1853" height="922" alt="image" src="https://github.com/user-attachments/assets/ac9844f0-5469-495c-8ec8-a0217eb3cd2d" />
 <img width="1850" height="920" alt="image" src="https://github.com/user-attachments/assets/f141746d-e319-46cf-99e3-f128f1b3081f" />
 <img width="1856" height="922" alt="image" src="https://github.com/user-attachments/assets/0157d760-f48d-464f-bcb4-dbb2bb0b34c4" />
 <img width="1846" height="918" alt="image" src="https://github.com/user-attachments/assets/846edd85-f8f2-45fc-b377-b62fc06d3da4" />
