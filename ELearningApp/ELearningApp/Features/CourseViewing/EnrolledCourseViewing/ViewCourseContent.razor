@@ -305,7 +305,7 @@
                         </div>
                         
                         <div class="max-h-[600px] overflow-y-auto">
-                            <ViewCourseModules Course="course" OnLessonSelected="SelectLesson" />
+                            <ViewCourseModules Course="course" OnLessonSelected="SelectLesson" OnProgressUpdated="OnProgressUpdated" @ref="courseModulesRef" />
                         </div>
                         
                         <!-- Progress and Quick Actions -->
@@ -388,6 +388,7 @@
     private ContentTab activeTab = ContentTab.Overview;
     private bool isMarkingComplete = false;
     private List<CourseAnnouncement> announcements = new();
+    private ViewCourseModules? courseModulesRef;
 
     private enum ContentTab
     {
@@ -510,6 +511,12 @@
                 
                 // Refresh course data to update progress
                 await LoadCourseData();
+                
+                // Refresh the course modules to show updated completion status
+                if (courseModulesRef != null)
+                {
+                    await courseModulesRef.RefreshProgress();
+                }
             }
             else
             {
@@ -523,6 +530,12 @@
             Console.WriteLine($"Error processing lesson completion: {ex.Message}");
             await ShowErrorModal("Failed to mark lesson as complete. Please try again.");
         }
+    }
+
+    private async Task OnProgressUpdated()
+    {
+        // Reload course data to get updated progress
+        await LoadCourseData();
     }
 
     private async Task MarkLessonCompleted(int lessonId)

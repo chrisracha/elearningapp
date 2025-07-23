@@ -823,9 +823,45 @@ namespace ELearningApp.Services
             try
             {
                 var enrollment = await _context.Enrollments
+                    .Include(e => e.Course)
+                    .ThenInclude(c => c.Modules)
+                    .ThenInclude(m => m.Lessons)
                     .FirstOrDefaultAsync(e => e.CourseId == courseId && e.UserId == studentId);
 
-                return enrollment?.ProgressPercentage ?? 0;
+                if (enrollment == null)
+                    return 0;
+
+                // Calculate progress based on completed lessons
+                var totalLessons = enrollment.Course.Modules
+                    .SelectMany(m => m.Lessons)
+                    .Count();
+
+                if (totalLessons == 0)
+                    return 0;
+
+                var completedLessons = await _context.LessonProgress
+                    .Where(lp => lp.EnrollmentId == enrollment.Id && lp.IsCompleted)
+                    .CountAsync();
+
+                var progressPercentage = (double)completedLessons / totalLessons * 100;
+
+                // Update the enrollment record with the calculated progress
+                if (Math.Abs(enrollment.ProgressPercentage - progressPercentage) > 0.01)
+                {
+                    enrollment.ProgressPercentage = progressPercentage;
+                    enrollment.LastAccessedDate = DateTime.UtcNow;
+                    
+                    // Check if course is completed
+                    if (progressPercentage >= 100 && enrollment.CompletionDate == null)
+                    {
+                        enrollment.CompletionDate = DateTime.UtcNow;
+                        enrollment.Status = EnrollmentStatus.Completed;
+                    }
+                    
+                    await _context.SaveChangesAsync();
+                }
+
+                return progressPercentage;
             }
             catch (Exception ex)
             {
@@ -878,6 +914,32 @@ namespace ELearningApp.Services
 
                 await _context.SaveChangesAsync();
 
+                // Recalculate and update overall course progress
+                var totalLessons = enrollment.Course.Modules
+                    .SelectMany(m => m.Lessons)
+                    .Count();
+
+                if (totalLessons > 0)
+                {
+                    var completedLessons = await _context.LessonProgress
+                        .Where(lp => lp.EnrollmentId == enrollment.Id && lp.IsCompleted)
+                        .CountAsync();
+
+                    var courseProgressPercentage = (double)completedLessons / totalLessons * 100;
+                    
+                    enrollment.ProgressPercentage = courseProgressPercentage;
+                    enrollment.LastAccessedDate = DateTime.UtcNow;
+                    
+                    // Check if course is completed
+                    if (courseProgressPercentage >= 100 && enrollment.CompletionDate == null)
+                    {
+                        enrollment.CompletionDate = DateTime.UtcNow;
+                        enrollment.Status = EnrollmentStatus.Completed;
+                    }
+                    
+                    await _context.SaveChangesAsync();
+                }
+
                 _logger.LogInformation("Updated lesson progress for lesson {LessonId}, student {StudentId}, completed: {IsCompleted}", 
                     lessonId, studentId, isCompleted);
                 return true;
@@ -886,6 +948,30 @@ namespace ELearningApp.Services
             {
                 _logger.LogError(ex, "Error updating lesson progress for lesson {LessonId}, student {StudentId}", lessonId, studentId);
                 return false;
+            }
+        }
+
+        // Add method to get lesson progress for a specific student
+        public async Task<Dictionary<int, bool>> GetLessonProgressAsync(int courseId, string studentId)
+        {
+            try
+            {
+                var enrollment = await _context.Enrollments
+                    .FirstOrDefaultAsync(e => e.CourseId == courseId && e.UserId == studentId);
+
+                if (enrollment == null)
+                    return new Dictionary<int, bool>();
+
+                var progress = await _context.LessonProgress
+                    .Where(lp => lp.EnrollmentId == enrollment.Id)
+                    .ToDictionaryAsync(lp => lp.LessonId, lp => lp.IsCompleted);
+
+                return progress;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting lesson progress for student {StudentId} in course {CourseId}", studentId, courseId);
+                return new Dictionary<int, bool>();
             }
         }
 

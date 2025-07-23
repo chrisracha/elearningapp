@@ -1,5 +1,8 @@
 @using ELearningApp.Models.Entities
 @using ELearningApp.Models.Enums
+@using ELearningApp.Services
+@inject ICourseService CourseService
+@inject IUserService UserService
 
 <div class="space-y-6">
     @if (Course?.Modules?.Any() == true)
@@ -81,8 +84,20 @@
 
                                         <!-- Completion Status -->
                                         <div class="flex-shrink-0">
-                                            @* TODO: Add completion status based on progress tracking *@
-                                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+                                            @if (lessonProgress.ContainsKey(lesson.Id) && lessonProgress[lesson.Id])
+                                            {
+                                                <!-- Completed lesson - green circle with checkmark -->
+                                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <!-- Incomplete lesson - gray circle -->
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full"></div>
+                                            }
                                         </div>
 
                                         <!-- Arrow Icon -->
@@ -122,6 +137,34 @@
 @code {
     [Parameter] public Course? Course { get; set; }
     [Parameter] public EventCallback<Lesson> OnLessonSelected { get; set; }
+    [Parameter] public EventCallback OnProgressUpdated { get; set; }
+
+    private Dictionary<int, bool> lessonProgress = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Course != null)
+        {
+            await LoadLessonProgress();
+        }
+    }
+
+    private async Task LoadLessonProgress()
+    {
+        try
+        {
+            var currentUser = await UserService.GetCurrentUserAsync();
+            if (currentUser != null && Course != null)
+            {
+                lessonProgress = await CourseService.GetLessonProgressAsync(Course.Id, currentUser.Id);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading lesson progress: {ex.Message}");
+        }
+    }
 
     private async Task SelectLesson(Lesson lesson)
     {
@@ -135,4 +178,10 @@
             Console.WriteLine($"ViewCourseModules: Error selecting lesson: {ex.Message}");
         }
     }
-} 
+
+    public async Task RefreshProgress()
+    {
+        await LoadLessonProgress();
+        await OnProgressUpdated.InvokeAsync();
+    }
+}

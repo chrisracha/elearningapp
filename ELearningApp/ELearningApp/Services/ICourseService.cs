@@ -71,6 +71,7 @@ namespace ELearningApp.Services
         Task<bool> UpdateLessonProgressAsync(int lessonId, string studentId, bool isCompleted);
         Task<bool> MarkLessonCompletedAsync(int lessonId, string studentId);
         Task<IEnumerable<LessonProgress>> GetStudentProgressAsync(string studentId);
+        Task<Dictionary<int, bool>> GetLessonProgressAsync(int courseId, string studentId);
 
         // Course Statistics
         Task<bool> IncrementCourseViewAsync(int courseId);

@@ -1,12 +1,5 @@
 ﻿# ELearning App
 
-<img width="1853" height="922" alt="image" src="https://github.com/user-attachments/assets/ac9844f0-5469-495c-8ec8-a0217eb3cd2d" />
-<img width="1850" height="920" alt="image" src="https://github.com/user-attachments/assets/f141746d-e319-46cf-99e3-f128f1b3081f" />
-<img width="1856" height="922" alt="image" src="https://github.com/user-attachments/assets/0157d760-f48d-464f-bcb4-dbb2bb0b34c4" />
-<img width="1846" height="918" alt="image" src="https://github.com/user-attachments/assets/846edd85-f8f2-45fc-b377-b62fc06d3da4" />
-
-
-
 ## 📋 Project Overview
 
 The ELearning App is a modern online learning platform built with **Blazor** (.NET 9), featuring both server-side and client-side rendering. It supports user registration, course creation and management, interactive course viewing, and a responsive, Tailwind CSS-powered UI.
@@ -82,7 +75,7 @@ The ELearning App is a modern online learning platform built with **Blazor** (.N
 
 - **Student:** `student@example.com` / `Password123!`
 - **Instructor:** `blazor.instructor@example.com` / `Password123!`
-- **Instructor (Empty):** `new.instructor@example.com` / `Password123!`
+
 ---
 
 ## 🚀 Getting Started
